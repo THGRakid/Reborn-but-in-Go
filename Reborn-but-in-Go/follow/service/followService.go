@@ -1,5 +1,6 @@
 package service
 
+// 未完成
 // FollowService 包括用户关系接口、用户关系中的方法
 type FollowService interface {
 
