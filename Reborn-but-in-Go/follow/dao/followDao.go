@@ -1,11 +1,11 @@
 package dao
 
 import (
+	"Reborn-but-in-Go/config"
+	"Reborn-but-in-Go/follow/model"
 	"log"
 	"sync"
 	"time"
-	"字节青训营/Reborn-but-in-Go/config"
-	"字节青训营/Reborn-but-in-Go/follow/model"
 )
 
 // FollowDao 把dao层看成整体，把dao的curd封装在一个结构体中。

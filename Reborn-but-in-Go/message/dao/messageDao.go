@@ -1,11 +1,11 @@
 package dao
 
 import (
+	"Reborn-but-in-Go/config"
+	"Reborn-but-in-Go/message/model"
 	"fmt"
 	"sync"
 	"time"
-	"字节青训营/Reborn-but-in-Go/config"
-	"字节青训营/Reborn-but-in-Go/message/model"
 )
 
 /*
