@@ -7,7 +7,7 @@
 工程无其他依赖，直接编译运行即可
 
 ```shell
-go build && ./simple-demo
+go build && ./simple-demo( For reference only )
 ```
 
 ### 功能说明
