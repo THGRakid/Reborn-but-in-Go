@@ -1,9 +1,8 @@
 package main
 
 import (
-	"Reborn-but-in-Go/config"
-	"github.com/THGRakid/Reborn-but-in-Go/config"
 	"net/http"
+	"字节青训营/Reborn-but-in-Go/config"
 )
 
 func main() {
