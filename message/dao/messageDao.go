@@ -34,10 +34,11 @@ func NewMessageDaoInstance() *MessageDao {
 	return messageDao
 }
 
+// CreateMessage
 /*
-方法一：
-创建一条消息
-参数：message对象，里面包含：send_id，receive_id，content
+  方法一：
+  创建一条消息
+  参数：message对象，里面包含：send_id，receive_id，content
 */
 func (*MessageDao) CreateMessage(message *model.Message) error {
 	// 设置初始状态和创建时间
@@ -53,13 +54,14 @@ func (*MessageDao) CreateMessage(message *model.Message) error {
 	return nil
 }
 
+// QueryMessageList
 /*
-方法二：
-查看在一段时间内双方的聊天记录
-参数：date string   一段时间
-参数：SendId int64   此信息发送者
-参数：ReceiveId int64   此信息接受者
-返回值：message对象列表
+  方法二：
+  查看在一段时间内双方的聊天记录
+  参数：date string   一段时间
+  参数：SendId int64   此信息发送者
+  参数：ReceiveId int64   此信息接受者
+  返回值：message对象列表
 */
 func (*MessageDao) QueryMessageList(date *string, SendId int64, ReceiveId int64) []*model.Message {
 	fmt.Println(*date)
