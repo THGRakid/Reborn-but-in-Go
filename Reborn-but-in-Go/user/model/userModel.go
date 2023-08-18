@@ -17,7 +17,7 @@ type User struct {
 	Favorited_count int64  //获赞数
 	Work_count int64 		//作品数
 	Favorite_count int64    //点赞数
-	time     	time.Time	//用户创建时间
+	CreateAt     	time.Time	//用户创建时间
 	Status      int8        //用户状态（在线为1，不在线为0）
 }
 
