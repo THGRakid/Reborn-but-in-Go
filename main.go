@@ -1,7 +1,7 @@
 package main
 
 import (
-	"Reborn-but-in-Go/config" // 导入你的 config 包
+	"Reborn-but-in-Go/config" // 导入config 包
 	"encoding/json"
 	"fmt"
 	"net/http"

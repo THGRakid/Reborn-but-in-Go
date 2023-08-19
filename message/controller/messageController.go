@@ -1,65 +1,92 @@
 package controller
 
-/*
-未更改
-*/
-/*
-var tempChat = map[string][]Message{}
+import (
+	"Reborn-but-in-Go/message/model"
+	"Reborn-but-in-Go/message/service"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
+)
 
-var messageIdSequence = int64(1)
-
-type ChatResponse struct {
-	Response
-	MessageList []Message `json:"message_list"`
+// MessageController 表现层
+type MessageController struct {
+	MessageService *service.MessageService
 }
 
-// MessageAction no practical effect, just check if token is valid
-func MessageAction(c *gin.Context) {
-	token := c.Query("token")
-	toUserId := c.Query("to_user_id")
-	content := c.Query("content")
+// 创建一个新的 MessageController 实例，并传递 MessageService
+func NewMessageController(messageService *service.MessageService) *MessageController {
+	return &MessageController{
+		MessageService: messageService,
+	}
+}
 
-	if user, exist := usersLoginInfo[token]; exist {
-		userIdB, _ := strconv.Atoi(toUserId)
-		chatKey := genChatKey(user.Id, int64(userIdB))
+// QueryMessage 处理获取聊天消息的请求
+func (c *MessageController) QueryMessage(ctx *gin.Context) {
+	// 获取请求参数
+	//token := ctx.Query("token")
+	toUserIdString := ctx.Query("to_user_id")
+	preMsgTime := ctx.Query("pre_msg_time")
 
-		atomic.AddInt64(&messageIdSequence, 1)
-		curMessage := Message{
-			Id:         messageIdSequence,
-			Content:    content,
-			CreateTime: time.Now().Format(time.Kitchen),
+	//将获取的string类型数据改成int64
+	toUserId, _ := strconv.Atoi(toUserIdString)
+
+	// 在这里进行用户鉴权，校验 token 等
+	// ...还不会
+	/*
+		在进行认证或授权检查时，如果用户未通过验证或没有权限，可以中止请求的处理。
+
+		if !isAuthorized {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
 		}
+	*/
 
-		if messages, exist := tempChat[chatKey]; exist {
-			tempChat[chatKey] = append(messages, curMessage)
-		} else {
-			tempChat[chatKey] = []Message{curMessage}
+	// 调用服务层获取聊天消息记录
+	chatResponse, err := c.MessageService.QueryMessage(int64(toUserId), preMsgTime)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get chat messages"})
+		return
+	}
+
+	// 返回获取的聊天消息记录
+	ctx.JSON(http.StatusOK, chatResponse)
+}
+
+// 处理消息操作的请求
+func (c *MessageController) SendMessage(ctx *gin.Context) {
+	// 绑定请求中的 JSON 数据到 RelationActionRequest 结构体
+	var actionRequest model.RelationActionRequest
+	if err := ctx.ShouldBindJSON(&actionRequest); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
+		return
+	}
+
+	// 在这里进行用户鉴权，校验 token 等
+	// ...还不会
+	/*
+		在进行认证或授权检查时，如果用户未通过验证或没有权限，可以中止请求的处理。
+
+		if !isAuthorized {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+			c.Abort()
+			return
 		}
-		c.JSON(http.StatusOK, Response{StatusCode: 0})
-	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	*/
+
+	// 检查 action_type，如果不是发送消息，返回错误
+	if actionRequest.ActionType != 1 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid action type"})
+		return
 	}
-}
 
-// MessageChat all users have same follow list
-func MessageChat(c *gin.Context) {
-	token := c.Query("token")
-	toUserId := c.Query("to_user_id")
-
-	if user, exist := usersLoginInfo[token]; exist {
-		userIdB, _ := strconv.Atoi(toUserId)
-		chatKey := genChatKey(user.Id, int64(userIdB))
-
-		c.JSON(http.StatusOK, ChatResponse{Response: Response{StatusCode: 0}, MessageList: tempChat[chatKey]})
-	} else {
-		c.JSON(http.StatusOK, Response{StatusCode: 1, StatusMsg: "User doesn't exist"})
+	// 调用服务层发送消息
+	err := c.MessageService.SendMessage(actionRequest.ToUserId, actionRequest.Content)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send message"})
+		return
 	}
-}
 
-func genChatKey(userIdA int64, userIdB int64) string {
-	if userIdA > userIdB {
-		return fmt.Sprintf("%d_%d", userIdB, userIdA)
-	}
-	return fmt.Sprintf("%d_%d", userIdA, userIdB)
+	// 返回操作成功的响应
+	ctx.JSON(http.StatusOK, gin.H{"status_code": 0, "status_msg": "Action completed successfully"})
 }
-*/
