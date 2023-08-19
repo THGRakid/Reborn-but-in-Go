@@ -2,7 +2,8 @@ package main
 
 import (
 	"net/http"
-	"字节青训营/Reborn-but-in-Go/config"
+	"Reborn-but-in-Go/config"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
