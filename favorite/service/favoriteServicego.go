@@ -16,7 +16,7 @@ type FavoriteService interface {
 	/*
 	   2.request需要实现的功能
 	*/
-	//当前用户对视频的点赞操作 ,并把这个行为更新到like表中。
+	//当前用户对视频的点赞操作 ,并把这个行为更新到favorite表中。
 	//当前操作行为，1点赞，2取消点赞。
 	FavouriteAction(userId int64, videoId int64, actionType int32) error
 	// GetFavouriteList 获取当前用户的所有点赞视频，调用videoService的方法
