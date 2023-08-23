@@ -7,7 +7,8 @@ import (
 	//"gorm.io/driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-
+	"crypto/rand"
+	"encoding/base64"
 	//"gorm.io/gorm/logger"
 	//"fmt"
 	"errors"
@@ -44,20 +45,45 @@ func NewUserDaoInstance() *UserDao {
 /*
 方法一：
 创建用户
-参数：user对象，里面包含：send_id，receive_id，content
+参数：username int64用户名, password string密码, nickname string昵称
+返回值：id int 用户id，token string 令牌，error错误
 */
-func (*UserDao) CreateUser(user *model.User) error {
+func (dao *UserDao) CreateUser(username int64, password string, nickname string) (int64, string, error) {
+	var user model.User
+	// 检查用户名是否已存在
+	existingUser := &model.User{}
+	result := config.DB.Model(&model.User{}).Where("name = ?", username).First(existingUser)
+	if result.Error == nil {
+		return 0, "", errors.New("用户名已存在")
+	}
+
 	// 设置初始状态和创建时间
 	user.Status = 0
 	user.CreateAt = time.Now()
 
 	//将user内数据导入数据库
-	result := config.DB.Create(&user)
-
+	result = config.DB.Create(&user)
 	if result.Error != nil {
-		return result.Error
+		return 0, "", result.Error
 	}
-	return nil
+
+	// 创建成功后返回用户 id 和权限token
+	temp_token, _ := generateAuthToken(user.Id)
+	return user.Id, temp_token, nil
+}
+// 生成权限token
+func generateAuthToken(userID int64) (string, error) {
+	// 生成一个随机的字节数组作为令牌
+	tokenBytes := make([]byte, 32)
+	_, err := rand.Read(tokenBytes)
+	if err != nil {
+		return "", err
+	}
+
+	// 将字节数组进行Base64编码，生成字符串作为令牌
+	token := base64.StdEncoding.EncodeToString(tokenBytes)
+
+	return token, nil
 }
 
 /*
