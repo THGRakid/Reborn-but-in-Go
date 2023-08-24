@@ -21,3 +21,10 @@ type Video struct {
 func (Video) TableName() string {
 	return "videos"
 }
+
+// 获取视频列表 结构块
+type ListResponse struct {
+	StatusCode int32    //状态码，0-成功，其他值-失败
+	StatusMsg  string   //返回状态描述
+	VideoList  []*Video //视频列表
+}
