@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-// Message 持久层结构块
+// User 持久层结构块
 type User struct {
 	Id        	int64     `gorm:"primaryKey"` //用户id
 	Name    	string    `gorm:"unique"` //用户名称（不重复）

@@ -9,6 +9,7 @@ import (
 	"gorm.io/gorm"
 	"crypto/rand"
 	"encoding/base64"
+	"strconv"
 	//"gorm.io/gorm/logger"
 	//"fmt"
 	"errors"
@@ -83,6 +84,10 @@ func generateAuthToken(userID int64) (string, error) {
 	// 将字节数组进行Base64编码，生成字符串作为令牌
 	token := base64.StdEncoding.EncodeToString(tokenBytes)
 
+	// 将userID与令牌进行组合，以确保唯一性
+	userIDString := strconv.FormatInt(userID, 10)
+	token = userIDString + "-" + token
+
 	return token, nil
 }
 
@@ -93,30 +98,29 @@ func generateAuthToken(userID int64) (string, error) {
 参数：password string   密码
 返回类型：bool （是否创建成功），error
 */
-
-func UserLogin(username, password string) (bool, error) {
+func UserLogin(username, password string) (*model.User, error) {
 	// 根据用户名查询用户信息
 	var user model.User
 	result := config.DB.Where("username = ?", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return false, errors.New("用户不存在")
+			return nil, errors.New("用户不存在")
 		}
-		return false, result.Error
+		return nil, result.Error
 	}
 
 	// 验证密码是否匹配
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return false, errors.New("密码不正确")
+		return nil, errors.New("密码不正确")
 	}
 
-	// 登录成功
-	return true, nil
+	// 登录成功，返回用户信息
+	return &user, nil
 }
 
 /*
 方法三：
-根据用户ID查看用户信息
+根据用户ID返回用户User指针
 参数：userID int64  用户名
 返回类型：*model.User （查询到的用户），error
 */
@@ -132,3 +136,22 @@ func GetUserByID(userID int64) (*model.User, error) {
 	}
 	return &user, nil
 }
+
+
+/*
+方法四：获取个人关注列表
+根据用户ID查看用户信息
+参数：userID int64  用户名
+返回类型：*model.User （查询到的用户），error
+
+func GetFollowing(userID int64) ([]int64, error) {
+	var user model.User
+	result := config.DB.First(&user, userID)
+	if result.Error != nil {
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			return nil, errors.New("用户不存在")
+		}
+		return nil, result.Error
+	}
+	return 
+}*/
