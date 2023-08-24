@@ -5,13 +5,12 @@ import (
 	"Reborn-but-in-Go/message/model"
 	"fmt"
 	"sync"
-	"time"
 )
 
 /*
 	构造方法
 */
-// MessageDao 用于操作消息数据的数据库访问对象（DAO）
+// MessageDao 数据层
 type MessageDao struct {
 }
 
@@ -34,16 +33,33 @@ func NewMessageDaoInstance() *MessageDao {
 	return messageDao
 }
 
+// QueryMessageList
 /*
-方法一：
-创建一条消息
-参数：message对象，里面包含：send_id，receive_id，content
+  方法一：
+  查看在一段时间内双方的聊天记录
+  参数：date string   一段时间
+  参数：SendId int64   此信息发送者
+  参数：ReceiveId int64   此信息接受者
+  返回值：message对象列表
 */
-func (*MessageDao) CreateMessage(message *model.Message) error {
-	// 设置初始状态和创建时间
-	message.Status = 1
-	message.CreateAt = time.Now()
+func (*MessageDao) QueryMessage(date *string, UserId int64, ToUserId int64) []*model.Message {
+	fmt.Println(*date)
+	var MessageList []*model.Message
+	//查询双方信息，并指定时间范围，按从小到大顺序
+	config.DB.Where("( (send_id = ? and receive_id = ?) or (send_id = ? receive_id = ?) ) and create_at > ?", UserId, ToUserId, ToUserId, UserId, date).
+		Order("create_at asc").Find(&MessageList)
 
+	fmt.Println(MessageList)
+	return MessageList
+}
+
+// CreateMessage
+/*
+  方法二：
+  创建一条消息
+  参数：message对象
+*/
+func (*MessageDao) SendMessage(message *model.Message) error {
 	//将message内数据导入数据库
 	result := config.DB.Create(&message)
 
@@ -54,54 +70,6 @@ func (*MessageDao) CreateMessage(message *model.Message) error {
 }
 
 /*
-方法二：
-查看在一段时间内双方的聊天记录
-参数：date string   一段时间
-参数：SendId int64   此信息发送者
-参数：ReceiveId int64   此信息接受者
-返回值：message对象列表
-*/
-func (*MessageDao) QueryMessageList(date *string, SendId int64, ReceiveId int64) []*model.Message {
-	fmt.Println(*date)
-	var MessageList []*model.Message
-	//查询双方信息，并指定时间范围，按从小到大顺序
-	config.DB.Where("( (send_id = ? and receive_id = ?) or (send_id = ? receive_id = ?) ) and create_at > ?", SendId, ReceiveId, ReceiveId, SendId, date).
-		Order("create_at asc").Find(&MessageList)
-
-	fmt.Println(MessageList)
-	return MessageList
-}
-
-/*
-
-*
-
-func (d *MessageDao) QueryMessage(toUserId int64, FromUserId int64) *to_relation.QueryBody {
-	message := Message{}
-	var msgType int64
-	err := DB.Model(&Message{}).Where("(to_user_id=? and from_user_id=?) or (to_user_id=? and from_user_id=?)", toUserId, FromUserId, FromUserId, toUserId).Order("create_at desc").First(&message).Error
-	if err != nil { //没查到，first会报个错
-		return &to_relation.QueryBody{
-			FromUserId: FromUserId,
-			ToUserId:   toUserId,
-			Message:    &to_relation.Message{},
-			MsgType:    0,
-		}
-	}
-	if FromUserId == message.FromUserId {
-		msgType = 1
-	} else {
-		msgType = 0
-	}
-
-	return &to_relation.QueryBody{
-		FromUserId: FromUserId,
-		ToUserId:   toUserId,
-		Message: &to_relation.Message{
-			Id:      message.Id,
-			Content: message.Content,
-		},
-		MsgType: msgType,
-	}
-}
+	方法三：
+	展示页面聊天记录（最后一条）
 */
