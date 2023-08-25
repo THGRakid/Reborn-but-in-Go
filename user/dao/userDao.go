@@ -115,6 +115,7 @@ func UserLogin(username, password string) (*model.User, error) {
 	}
 
 	// 登录成功，返回用户信息
+	user.Status=1
 	return &user, nil
 }
 

@@ -18,7 +18,7 @@ type User struct {
 	Work_count int64 		//作品数
 	Favorite_count int64    //点赞数
 	CreateAt     	time.Time	//用户创建时间
-	Status      int8        //用户状态（在线为1，不在线为0）
+	Status      int8    `gorm:"default:0"`     //用户状态（在线为1，不在线为0）
 }
 
 // TableName 修改表名映射
