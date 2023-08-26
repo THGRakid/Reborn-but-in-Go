@@ -23,16 +23,16 @@ func NewVideoDaoInstance() *VideoDao {
 	return videoDao
 }
 
-// GetVideoList 按投稿时间倒序返回视频列表
-func (*VideoDao) GetVideoList(num int) ([]model.Video, error) {
-	var videos []model.Video
-	result := config.DB.Model(&model.Video{}).Order("time desc").Limit(num).Find(&videos)
-	if result.Error != nil {
-		fmt.Println("按投稿时间降序获取Video列表失败")
-		return nil, result.Error
-	}
-	return videos, nil
-}
+//// GetVideoList 按投稿时间倒序返回视频列表
+//func (*VideoDao) GetVideoList(num int) ([]model.Video, error) {
+//	var videos []model.Video
+//	result := config.DB.Model(&model.Video{}).Order("time desc").Limit(num).Find(&videos)
+//	if result.Error != nil {
+//		fmt.Println("按投稿时间降序获取Video列表失败")
+//		return nil, result.Error
+//	}
+//	return videos, nil
+//}
 
 // CreateVideo 创建一个新的Video，返回Video实例
 func (*VideoDao) CreateVideo(video *model.Video) (*model.Video, error) {
