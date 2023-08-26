@@ -1,6 +1,7 @@
 package controller
 
 import (
+	userDao "Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/video/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -44,7 +45,7 @@ type FeedNoVideoResponse struct {
 	NextTime int64 `json:"next_time"`
 }
 type FeedUser struct {
-	Id             int    `json:"id,omitempty"`
+	Id             int64  `json:"id,omitempty"`
 	Name           string `json:"name,omitempty"`
 	Follow         int64  `json:"follow_count,omitempty"`
 	Follower       int64  `json:"follower_count,omitempty"`
@@ -76,16 +77,16 @@ func (*feedController) Feed(c *gin.Context) {
 		tmp.Id = v.Id
 		tmp.VideoPath = v.VideoPath
 		//tmp.Author = //依靠用户信息接口查询
-		var user, err = service.GetUser(v.UserId)
+		var user, err = userDao.GetUserByID(v.UserId)
 		var feedUser FeedUser
 		if err == nil { //用户存在
 			feedUser.Id = user.Id
 			feedUser.Follower = user.Follower
-			feedUser.Follow = user.Follow
+			feedUser.Follow = user.Following
 			feedUser.Name = user.Name
 			//add
-			feedUser.FavoritedCount = user.FavoritedCount
-			feedUser.FavoriteCount = user.FavoriteCount
+			feedUser.FavoritedCount = user.Favorited_count
+			feedUser.FavoriteCount = user.Favorite_count
 			feedUser.IsFollow = false
 			if haveToken {
 				// 查询是否关注
@@ -108,7 +109,7 @@ func (*feedController) Feed(c *gin.Context) {
 			//查询是否点赞过
 			tokenStruct, ok := middleware.CheckToken(strToken)
 			if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-				var uid = tokenStruct.UserId         //用户id
+				var uid = tokenStruct.Id             //用户id
 				var vid = v.Id                       // 视频id
 				if service.CheckFavorite(uid, vid) { //有点赞记录
 					tmp.IsFavorite = true
