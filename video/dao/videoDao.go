@@ -4,7 +4,6 @@ import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/video/model"
 	"fmt"
-	"gorm.io/gorm"
 	"sync"
 )
 
@@ -22,17 +21,6 @@ func NewVideoDaoInstance() *VideoDao {
 		})
 	return videoDao
 }
-
-//// GetVideoList 按投稿时间倒序返回视频列表
-//func (*VideoDao) GetVideoList(num int) ([]model.Video, error) {
-//	var videos []model.Video
-//	result := config.DB.Model(&model.Video{}).Order("time desc").Limit(num).Find(&videos)
-//	if result.Error != nil {
-//		fmt.Println("按投稿时间降序获取Video列表失败")
-//		return nil, result.Error
-//	}
-//	return videos, nil
-//}
 
 // CreateVideo 创建一个新的Video，返回Video实例
 func (*VideoDao) CreateVideo(video *model.Video) (*model.Video, error) {
@@ -65,24 +53,6 @@ func (*VideoDao) GetVideoById(videoId int64) (*model.Video, error) {
 		return nil, err
 	}
 	return &video, err
-}
-
-// AddCommentCount 根据videoId将评论条数+1
-func AddCommentCount(videoId int64) error {
-	if err := config.DB.Model(&model.Video{}).Where("id = ?", videoId).Update("comment_count", gorm.Expr("comment_count + 1")).Error; err != nil {
-		fmt.Println("评论条数+1失败")
-		return err
-	}
-	return nil
-}
-
-// ReduceCommentCount 根据videoId将评论条数-1
-func ReduceCommentCount(videoId int64) error {
-	if err := config.DB.Model(&model.Video{}).Where("id = ?", videoId).Update("comment_count", gorm.Expr("comment_count - 1")).Error; err != nil {
-		fmt.Println("评论条数-1失败")
-		return err
-	}
-	return nil
 }
 
 // GetVideoAuthor 根据videoId得到视频作者
