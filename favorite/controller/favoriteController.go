@@ -3,6 +3,7 @@ package controller
 //：表现层，对接前端的接口
 import (
 	"Reborn-but-in-Go/favorite/service"
+	"Reborn-but-in-Go/video/model"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -27,9 +28,9 @@ type FavoriteResponse struct {
 }
 
 type GetFavouriteListResponse struct {
-	StatusCode int32           `json:"status_code"`
-	StatusMsg  string          `json:"status_msg,omitempty"`
-	VideoList  []service.Video `json:"video_list,omitempty"`
+	StatusCode int32         `json:"status_code"`
+	StatusMsg  string        `json:"status_msg,omitempty"`
+	VideoList  []model.Video `json:"video_list,omitempty"`
 }
 
 // FavoriteAction 点赞或者取消赞操作;
@@ -40,9 +41,9 @@ func (f *FavoriteController) FavoriteAction(c *gin.Context) {
 	videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
 	strActionType := c.Query("action_type")
 	actionType, _ := strconv.ParseInt(strActionType, 10, 64)
-	Favorite := new(service.FavoriteServiceImpl)
+	Favorite := new(service.FavoriteService)
 	//获取点赞或者取消赞操作的错误信息
-	err := Favorite.FavouriteAction(userId, videoId, int32(actionType))
+	err := Favorite.FavouriteAction(userId, videoId, int8(actionType))
 	if err == nil {
 		log.Printf("方法Favorite.FavouriteAction(userid, videoId, int32(actiontype) 成功")
 		c.JSON(http.StatusOK, FavoriteResponse{
@@ -64,7 +65,7 @@ func (f *FavoriteController) GetFavoriteList(c *gin.Context) {
 	strCurId := c.GetString("userId")
 	userId, _ := strconv.ParseInt(strUserId, 10, 64)
 	curId, _ := strconv.ParseInt(strCurId, 10, 64)
-	Favorite := GetVideo()
+	Favorite := new(service.FavoriteService)
 	videos, err := Favorite.GetFavouriteList(userId, curId)
 	if err == nil {
 		log.Printf("方法Favorite.GetFavouriteList(userid) 成功")
