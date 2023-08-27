@@ -1,6 +1,7 @@
 package controller
 
 import (
+	favoriteService "Reborn-but-in-Go/favorite/service"
 	userDao "Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/video/service"
 	"github.com/gin-gonic/gin"
@@ -54,7 +55,7 @@ type FeedUser struct {
 	FavoriteCount  int64  `json:"favorite_count"`
 }
 
-func (*feedController) Feed(c *gin.Context) {
+func (controller *feedController) Feed(c *gin.Context) {
 	strToken := c.Query("token")
 	var haveToken bool
 	if strToken == "" {
@@ -70,6 +71,7 @@ func (*feedController) Feed(c *gin.Context) {
 
 	var feedVideoList []FeedVideo
 	feedVideoList = make([]FeedVideo, 0)
+
 	videoList, _ := service.FeedGet(lastTime)
 	var newTime int64 = 0 //返回的视频的最久的一个的时间
 	for _, v := range videoList {
@@ -109,9 +111,10 @@ func (*feedController) Feed(c *gin.Context) {
 			//查询是否点赞过
 			tokenStruct, ok := middleware.CheckToken(strToken)
 			if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-				var uid = tokenStruct.Id             //用户id
-				var vid = v.Id                       // 视频id
-				if service.CheckFavorite(uid, vid) { //有点赞记录
+				var uid = tokenStruct.Id //用户id
+				var vid = v.Id           // 视频id
+				var isFavorite, _ = favoriteService.IsFavourite(vid, uid)
+				if isFavorite { //有点赞记录
 					tmp.IsFavorite = true
 				}
 			}
