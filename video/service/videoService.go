@@ -42,6 +42,10 @@ func FeedGet(lastTime int64) ([]model.Video, error) {
 }
 
 // GetCoverPath 传入视频源文件地址，截取视频的第num帧作为视频封面，返回封面路径，可直接存至数据库中
+/*
+ffmpeg需访问http://ffmpeg.org/download.html下载安装并且配置好环境变量，相应教程可在网上查找，我的参考
+https://www.bilibili.com/video/BV1xf4y1Z7pV/?spm_id_from=333.337.search-card.all.click&vd_source=e63b0e97f9f156b04320cc032690c072
+*/
 func GetCoverPath(videoPath string, frameNum int) (coverPath string, err error) {
 	//获取项目路径
 	workPath, _ := os.Getwd()
