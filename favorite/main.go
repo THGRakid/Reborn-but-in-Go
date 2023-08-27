@@ -23,7 +23,7 @@ func main() {
 	r.POST("/douyin/favorite/action/", favoriteController.FavoriteAction)
 
 	// 注册 POST 路由，处理点赞列表，使用表现层中的 GetFavouriteList 函数
-	r.GET("/douyin/favorite/list/", favoriteController.GetFavouriteList)
+	r.GET("/douyin/favorite/list/", favoriteController.GetFavoriteList)
 
 	// 启动服务器并监听在 :8080 端口上
 	if err := r.Run(":8080"); err != nil {

@@ -31,7 +31,7 @@ func NewFavoriteDaoInstance() *FavoriteDao {
 //以下为favorite对数据库的操作方法
 
 // GetFavoriteUserIdList 根据videoId获取点赞userId,获取视频的所有点赞用户
-func GetFavoriteUserIdList(videoId int64) ([]int64, error) {
+func (*FavoriteDao) GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 	var FavoriteUserIdList []int64 // 存储所有该视频点赞用户id
 	// 查询Favorites表对应视频id点赞用户，返回查询结果
 	err := config.DB.
@@ -46,7 +46,7 @@ func GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 }
 
 // UpdateFavorite 根据userId，videoId,actionType点赞或者取消赞
-func UpdateFavorite(userId int64, videoId int64, actionType int8) error {
+func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8) error {
 	// 更新当前用户观看视频的点赞状态
 	err := config.DB.Model(model.Favorite{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).
 		Update("status", actionType).Error
@@ -58,7 +58,7 @@ func UpdateFavorite(userId int64, videoId int64, actionType int8) error {
 }
 
 // InsertFavorite 插入点赞数据
-func InsertFavorite(FavoriteData model.Favorite) error {
+func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 	// 创建点赞数据，默认为点赞，status为1
 	err := config.DB.Model(model.Favorite{}).Create(&FavoriteData).Error
 	if err != nil {
@@ -69,7 +69,7 @@ func InsertFavorite(FavoriteData model.Favorite) error {
 }
 
 // GetFavoriteInfo 根据userId,videoId查询点赞信息
-func GetFavoriteInfo(userId int64, videoId int64) (model.Favorite, error) {
+func (*FavoriteDao) GetFavoriteInfo(userId int64, videoId int64) (model.Favorite, error) {
 	// 根据userid,videoId查询是否有该条信息，如果有，存储在FavoriteInfo，返回查询结果
 	favorite := model.Favorite{}
 	err := config.DB.Model(model.Favorite{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).
@@ -87,7 +87,7 @@ func GetFavoriteInfo(userId int64, videoId int64) (model.Favorite, error) {
 }
 
 // GetFavoriteVideoIdList 根据userId查询所属点赞全部videoId
-func GetFavoriteVideoIdList(userId int64) ([]int64, error) {
+func (*FavoriteDao) GetFavoriteVideoIdList(userId int64) ([]int64, error) {
 	var FavoriteVideoIdList []int64
 	err := config.DB.Model(model.Favorite{}).Where(map[string]interface{}{"user_id": userId, "status": 1}).
 		Pluck("video_id", &FavoriteVideoIdList).Error
@@ -102,26 +102,3 @@ func GetFavoriteVideoIdList(userId int64) ([]int64, error) {
 	}
 	return FavoriteVideoIdList, nil
 }
-
-//
-//
-//// InsertFavorite 插入点赞记录
-//func (dao *FavoriteDao) InsertFavorite(favorite *model.Favorite) error {
-//	result := dao.DB.Create(favorite)
-//	if result.Error != nil {
-//		log.Println("插入点赞记录失败:", result.Error)
-//		return result.Error
-//	}
-//	return nil
-//}
-//
-//// GetFavoriteListByUserID 获取用户点赞列表
-//func (dao *FavoriteDao) GetFavoriteListByUserID(userID int64) ([]model.Favorite, error) {
-//	var favorites []model.Favorite
-//	result := dao.DB.Where("user_id = ?", userID).Find(&favorites)
-//	if result.Error != nil {
-//		log.Println("获取用户点赞列表失败:", result.Error)
-//		return nil, result.Error
-//	}
-//	return favorites, nil
-//}

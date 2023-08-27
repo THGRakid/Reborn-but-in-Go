@@ -2,7 +2,7 @@ package service
 
 import (
 	"Reborn-but-in-Go/Favorite/dao"
-
+	vidDao "Reborn-but-in-Go/video/dao"
 	"log"
 	"strconv"
 	"sync"
@@ -38,7 +38,7 @@ func NewFavoriteService(favoriteDao *dao.FavoriteDao) *FavoriteService {
 // IsFavorite 根据当前视频id判断是否点赞了该视频。
 func (*FavoriteService) IsFavourite(videoId int64, userId int64) (bool, error) {
 	// 根据userId查询Favorites表，返回点赞的videoId列表
-	videoIdList, err := dao.GetFavoriteVideoIdList(userId)
+	videoIdList, err := dao.NewFavoriteDaoInstance().GetFavoriteUserIdList(userId)
 	if err != nil {
 		log.Printf(err.Error())
 		return false, err
@@ -57,7 +57,7 @@ func (*FavoriteService) IsFavourite(videoId int64, userId int64) (bool, error) {
 // FavouriteCount 根据当前视频id获取当前视频点赞数量。
 func (*FavoriteService) FavouriteCount(videoId int64) (int64, error) {
 	// 获取点赞用户列表
-	userIdList, err := dao.GetFavoriteUserIdList(videoId)
+	userIdList, err := dao.NewFavoriteDaoInstance().GetFavoriteUserIdList(videoId)
 	if err != nil {
 		log.Printf(err.Error())
 		return 0, err
@@ -72,7 +72,7 @@ func (*FavoriteService) FavouriteCount(videoId int64) (int64, error) {
 // 该函数未完成
 func (*FavoriteService) GetTotalFavoritedCount(userId int64) (int64, error) {
 	//根据userId获取这个用户的发布视频列表信息
-	videoIdList, err := dao.GetVideoIdList(userId)
+	videoIdList, err := vidDao.NewVideoDaoInstance().GetVideoListByUserId(userId)
 	if err != nil {
 		log.Printf(err.Error())
 		return 0, err
@@ -97,7 +97,7 @@ func (*FavoriteService) GetTotalFavoritedCount(userId int64) (int64, error) {
 
 // 根据userId获取这个用户点赞视频数量
 func (f *FavoriteService) GetTotalFavouriteVideoCount(userId int64) (int64, error) {
-	videoIdList, err := dao.GetFavoriteVideoIdList(userId)
+	videoIdList, err := dao.NewFavoriteDaoInstance().GetFavoriteVideoIdList(userId)
 	if err != nil {
 		log.Printf(err.Error())
 		return 0, err
@@ -114,7 +114,7 @@ func (f *FavoriteService) GetTotalFavouriteVideoCount(userId int64) (int64, erro
 // 点赞状态改变
 func (*FavoriteService) FavouriteAction(userId int64, videoId int64, actionType int8) error {
 	// 维护数据库信息
-	err := dao.UpdateFavorite(userId, videoId, actionType)
+	err := dao.NewFavoriteDaoInstance().UpdateFavorite(userId, videoId, actionType)
 	if err != nil {
 		return err
 	}
@@ -124,7 +124,7 @@ func (*FavoriteService) FavouriteAction(userId int64, videoId int64, actionType 
 // GetFavouriteList 函数根据给定的 userId 和 curId 获取用户的点赞视频列表。
 func (f *FavoriteService) GetFavouriteList(userId int64, curId int64) ([]Video, error) {
 	// 根据 userId 查询用户点赞的视频 id 列表
-	videoIdList, err := dao.GetFavoriteVideoIdList(userId)
+	videoIdList, err := dao.NewFavoriteDaoInstance().GetFavoriteVideoIdList(userId)
 	if err != nil {
 		log.Printf("GetFavouriteList 获取用户点赞视频列表错误：%v", err)
 		return nil, err
