@@ -42,7 +42,7 @@ func FeedGet(lastTime int64) ([]model.Video, error) {
 }
 
 // GetCoverPath 传入视频源文件地址，截取视频的第num帧作为视频封面，返回封面路径，可直接存至数据库中
-func GetCoverPath(videoPath string, frameNum int) (ImagePath string, err error) {
+func GetCoverPath(videoPath string, frameNum int) (coverPath string, err error) {
 	//获取项目路径
 	workPath, _ := os.Getwd()
 	//获取视频完整文件名（有后缀）
@@ -50,7 +50,7 @@ func GetCoverPath(videoPath string, frameNum int) (ImagePath string, err error) 
 	//去掉视频文件后缀用作封面名
 	coverName := videoName[:len(videoName)-len(filepath.Ext(videoName))]
 	//拼接封面存放位置
-	coverPath := workPath + "/static/covers/" + coverName
+	coverPath = workPath + "/static/covers/" + coverName
 	//开始制作视频封面
 	buf := bytes.NewBuffer(nil)
 	err = ffmpeg.Input(videoPath).Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,%d)", frameNum)}).
