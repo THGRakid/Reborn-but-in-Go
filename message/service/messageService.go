@@ -3,12 +3,15 @@ package service
 import (
 	"Reborn-but-in-Go/message/dao"
 	"Reborn-but-in-Go/message/model"
+	"context"
+	"encoding/json"
 	"time"
 )
 
 // MessageService 服务层
 type MessageService struct {
 	MessageDao *dao.MessageDao
+	//RedisClient *redis.Client
 }
 
 // NewMessageService 创建一个新的 MessageService 实例
@@ -52,5 +55,14 @@ func (s *MessageService) SendMessage(toUserID int64, content string) error {
 	if err != nil {
 		return err
 	}
+
+	// 将消息发布到 Redis 频道
+	messageJSON, _ := json.Marshal(message)
+	err = s.RedisClient.Publish(context.Background(), "chat_channel", messageJSON).Err()
+	if err != nil {
+		// 处理发布到 Redis 频道的错误
+		return err
+	}
+
 	return nil
 }

@@ -7,8 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	r := gin.Default()
+func initFollowRouter(r *gin.Engine) {
+	// public directory is used to serve static resources
+	r.Static("/static", "./public")
 
 	followDao := dao.NewFollowDaoInstance()
 
@@ -22,8 +23,4 @@ func main() {
 
 	r.GET("/relation/follower/list", followController.GetFollowers)
 
-	// 启动服务器并监听在 :8080 端口上
-	if err := r.Run(":8080"); err != nil {
-		panic("Failed to run server: " + err.Error())
-	}
 }

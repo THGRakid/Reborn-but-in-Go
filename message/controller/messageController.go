@@ -11,6 +11,7 @@ import (
 // MessageController 表现层
 type MessageController struct {
 	MessageService *service.MessageService
+	//RedisClient    *redis.Client
 }
 
 // 创建一个新的 MessageController 实例，并传递 MessageService
@@ -20,6 +21,39 @@ func NewMessageController(messageService *service.MessageService) *MessageContro
 	}
 }
 
+/*
+func (c *MessageController) HandleWebSocketConnection(ctx *gin.Context) {
+	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+	if err != nil {
+		// 处理错误
+		return
+	}
+	defer conn.Close()
+
+	// 将 conn 加入到订阅列表，以便在有新消息时推送给客户端
+	c.MessageService.AddSubscriber(conn)
+
+	// 保持 WebSocket 连接，等待客户端发送或关闭连接
+	for {
+		messageType, p, err := conn.ReadMessage()
+		if err != nil {
+			// 处理错误或客户端关闭连接，从订阅列表中移除 conn
+			c.MessageService.RemoveSubscriber(conn)
+			break
+		}
+
+		// 在收到消息时进行处理，根据需要发送响应
+		// 例如，可以根据消息内容进行一些操作，并将结果发送给客户端
+		// ...
+
+		// 示例：将消息内容返回给客户端
+		err = conn.WriteMessage(messageType, p)
+		if err != nil {
+			// 处理错误
+		}
+	}
+}
+*/
 // QueryMessage 处理获取聊天消息的请求
 func (c *MessageController) QueryMessage(ctx *gin.Context) {
 	// 获取请求参数

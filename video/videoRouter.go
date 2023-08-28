@@ -7,13 +7,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	r := gin.Default()
+func initVideoRouter(r *gin.Engine) {
+	// public directory is used to serve static resources
+	r.Static("/static", "./public")
 	videoDao := dao.NewVideoDaoInstance()
 	videoService := service.NewVideoService(videoDao)
 	feedController := controller.NewFeedController(videoService)
 	r.GET("/douyin/feed", feedController.Feed)
-	if err := r.Run(":8080"); err != nil {
-		panic("Failed to run server: " + err.Error())
-	}
+
 }

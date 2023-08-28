@@ -7,8 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	r := gin.Default() // 创建一个默认的 Gin 路由引擎
+func initCommentRouter(r *gin.Engine) {
+	// public directory is used to serve static resources
+	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
 
 	// 创建数据访问层（DAO）的单例实例
 	commentDao := dao.NewCommentDaoInstance()
@@ -25,8 +26,4 @@ func main() {
 	// 注册 POST 路由，处理发送消息操作的请求，使用表现层中的 SendMessage 函数
 	r.POST("/douyin/message/action", commentController.HandleCommentAction)
 
-	// 启动服务器并监听在 :8080 端口上
-	if err := r.Run(":8080"); err != nil {
-		panic("Failed to run server: " + err.Error())
-	}
 }
