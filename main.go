@@ -4,6 +4,7 @@ import (
 	"Reborn-but-in-Go/comment"
 	"Reborn-but-in-Go/favorite"
 	"Reborn-but-in-Go/message"
+	"Reborn-but-in-Go/video"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,7 +14,7 @@ func main() {
 
 	message.InitMessageRouter(r)
 	favorite.InitFavoriteRouter(r)
-	video.InitvideoRouter(r)
+	video.InitVideoRouter(r)
 	follow.InitFollowRouter(r)
 	comment.InitCommentRouter(r)
 
