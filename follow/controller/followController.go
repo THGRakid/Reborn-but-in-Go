@@ -3,6 +3,7 @@ package controller
 import (
 	"Reborn-but-in-Go/follow/dao"
 	"Reborn-but-in-Go/follow/service"
+	"Reborn-but-in-Go/user/model"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -33,13 +34,13 @@ type RelationActionResp struct {
 // FollowingResp 关注列表相关部分，User传入预留
 type FollowingResp struct {
 	Response
-	UserList []service.User `json:"user_list,omitempty"`
+	UserList []model.User `json:"user_list,omitempty"`
 }
 
 // FollowersResp 粉丝列表相关部分，User传入预留
 type FollowersResp struct {
 	Response
-	UserList []service.User `json:"user_list,omitempty"`
+	UserList []model.User `json:"user_list,omitempty"`
 }
 
 // RelationAction 处理关注和取消关注请求。
