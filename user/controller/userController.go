@@ -1,7 +1,6 @@
 package controller
 
 import (
-	"Reborn-but-in-Go/user/model"
 	"Reborn-but-in-Go/user/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
@@ -20,16 +19,13 @@ func NewUserController(userService *service.UserService) *UserController {
 	}
 }
 
-// 注册新用户
+// CreateUser 注册新用户
 func (c *UserController) CreateUser(ctx *gin.Context) {
-	// 绑定请求中的 JSON 数据到 UserRequest结构体
-	var actionRequest model.UserRequest
-	if err := ctx.ShouldBindJSON(&actionRequest); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
-		return
-	}
 
-	userResponse, err := c.UserService.CreateUser(actionRequest.Username, actionRequest.Password)
+	username := ctx.PostForm("username")
+	password := ctx.PostForm("password")
+
+	userResponse, err := c.UserService.CreateUser(username, password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "注册失败"})
 		return
@@ -38,16 +34,13 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, userResponse)
 }
 
-// 用户登录
+// UserLogin 用户登录
 func (c *UserController) UserLogin(ctx *gin.Context) {
-	// 绑定请求中的 JSON 数据到 UserRequest结构体
-	var actionRequest model.UserRequest
-	if err := ctx.ShouldBindJSON(&actionRequest); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
-		return
-	}
 
-	userResponse, err := c.UserService.UserLogin(actionRequest.Username, actionRequest.Password)
+	username := ctx.PostForm("username")
+	password := ctx.PostForm("password")
+
+	userResponse, err := c.UserService.UserLogin(username, password)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "登录失败"})
 		return
@@ -56,7 +49,7 @@ func (c *UserController) UserLogin(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, userResponse)
 }
 
-// 通过id返回用户信息
+// GetUserByID 通过id返回用户信息
 func (c *UserController) GetUserByID(ctx *gin.Context) {
 	userIdString := ctx.Query("user_id")
 
