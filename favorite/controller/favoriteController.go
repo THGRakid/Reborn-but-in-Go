@@ -3,7 +3,6 @@ package controller
 //：表现层，对接前端的接口
 import (
 	"Reborn-but-in-Go/favorite/service"
-	"Reborn-but-in-Go/video/model"
 	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
@@ -28,9 +27,11 @@ type FavoriteResponse struct {
 }
 
 type GetFavouriteListResponse struct {
-	StatusCode int32         `json:"status_code"`
-	StatusMsg  string        `json:"status_msg,omitempty"`
-	VideoList  []model.Video `json:"video_list,omitempty"`
+	StatusCode int32   `json:"status_code"`
+	StatusMsg  string  `json:"status_msg,omitempty"`
+	VideoList  []int64 `json:"video_list,omitempty"`
+	//VideoList  []model.Video `json:"video_list,omitempty"`
+	//错误情况，后续videoList使用类型为[]int64，而本需要[]model.Video ，需完成对接工作。未更改
 }
 
 // FavoriteAction 点赞或者取消赞操作;
