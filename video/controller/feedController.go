@@ -5,6 +5,8 @@ import (
 	followService "Reborn-but-in-Go/follow/service"
 	userDao "Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/video/service"
+	"fmt"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -15,7 +17,52 @@ type feedController struct {
 	VideoService    *service.VideoService
 	FollowService   *followService.FollowService
 	FavoriteService *favoriteService.FavoriteService
+	UserDao         *userDao.UserDao
 }
+
+//——————————————中间件——————————————
+
+var Key = []byte("Reborn_But_In_Go") //加密key
+type MyClaims struct {
+	UserId   int64  `json:"user_id"`
+	UserName string `json:"username"`
+	jwt.StandardClaims
+}
+
+var userId int64 = 666
+var userName = "GGBond"
+
+// CreateToken 生成一个token
+func CreateToken(userId int64, userName string) (string, error) {
+	expireTime := time.Now().Add(24 * time.Hour) //过期时间
+	nowTime := time.Now()                        //当前时间
+	claims := MyClaims{
+		UserId:   userId,
+		UserName: userName,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: expireTime.Unix(), //过期时间戳
+			IssuedAt:  nowTime.Unix(),    //当前时间戳
+			Issuer:    "zhoumo",          //颁发者签名
+			Subject:   "userToken",       //签名主题
+		},
+	}
+	tokenStruct := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return tokenStruct.SignedString(Key)
+}
+
+// CheckToken 验证token
+func CheckToken(token string) (*MyClaims, bool) {
+	tokenObj, _ := jwt.ParseWithClaims(token, &MyClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return Key, nil
+	})
+	if key, _ := tokenObj.Claims.(*MyClaims); tokenObj.Valid {
+		return key, true
+	} else {
+		return nil, false
+	}
+}
+
+// ——————————————中间件——————————————
 
 // NewFeedController 创建一个新的 FeedController 实例
 func NewFeedController(videoService *service.VideoService) *feedController {
@@ -59,6 +106,11 @@ type FeedUser struct {
 }
 
 func (controller *feedController) Feed(c *gin.Context) {
+	s, e := CreateToken(userId, userName)
+	if e != nil {
+		fmt.Printf("%s", e)
+	}
+	fmt.Println(s)
 	strToken := c.Query("token")
 	var haveToken bool
 	if strToken == "" {
@@ -82,7 +134,7 @@ func (controller *feedController) Feed(c *gin.Context) {
 		tmp.Id = v.Id
 		tmp.VideoPath = v.VideoPath
 		//tmp.Author = //依靠用户信息接口查询
-		var user, err = userDao.GetUserByID(v.UserId)
+		var user, err = controller.UserDao.GetUserByID(v.UserId)
 		var feedUser FeedUser
 		if err == nil { //用户存在
 			feedUser.Id = user.Id
@@ -90,12 +142,12 @@ func (controller *feedController) Feed(c *gin.Context) {
 			feedUser.Follow = user.Following
 			feedUser.Name = user.Name
 			//add
-			feedUser.FavoritedCount = user.Favorited_count
-			feedUser.FavoriteCount = user.Favorite_count
+			feedUser.FavoritedCount = user.FavoritedCount
+			feedUser.FavoriteCount = user.FavoriteCount
 			feedUser.IsFollow = false
 			if haveToken {
 				// 查询是否关注
-				tokenStruct, ok := middleware.CheckToken(strToken)    //中间件校验Token
+				tokenStruct, ok := CheckToken(strToken)               //中间件校验Token
 				if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
 					uid1 := tokenStruct.UserId                                      //用户id
 					uid2 := v.UserId                                                //视频发布者id
@@ -113,9 +165,9 @@ func (controller *feedController) Feed(c *gin.Context) {
 		tmp.IsFavorite = false
 		if haveToken {
 			//查询是否点赞过
-			tokenStruct, ok := middleware.CheckToken(strToken)
+			tokenStruct, ok := CheckToken(strToken)
 			if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-				uid := tokenStruct.Id                                             //用户id
+				uid := tokenStruct.UserId                                         //用户id
 				vid := v.Id                                                       // 视频id
 				isFavorite, _ := controller.FavoriteService.IsFavourite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
 				if isFavorite {                                                   //有点赞记录
