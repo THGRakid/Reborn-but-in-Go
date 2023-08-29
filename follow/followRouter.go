@@ -8,9 +8,6 @@ import (
 )
 
 func InitFollowRouter(r *gin.Engine) {
-	// public directory is used to serve static resources
-	r.Static("/static", "./public")
-
 	followDao := dao.NewFollowDaoInstance()
 
 	followService := service.NewFollowService(followDao)

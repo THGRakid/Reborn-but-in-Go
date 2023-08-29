@@ -14,6 +14,7 @@ import (
 func main() {
 
 	r := gin.Default()
+	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
 
 	// 调用各模块接口
 	video.InitVideoRouter(r)

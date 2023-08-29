@@ -8,9 +8,6 @@ import (
 )
 
 func InitUserRouter(r *gin.Engine) {
-	// public directory is used to serve static resources
-	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
-
 	//创建数据访问层（DAO）的单例实例
 	userDao := dao.NewUserDaoInstance()
 
