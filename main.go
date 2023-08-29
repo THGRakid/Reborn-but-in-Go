@@ -2,26 +2,24 @@ package main
 
 import (
 	"Reborn-but-in-Go/comment"
-	"Reborn-but-in-Go/favorite"
 	"Reborn-but-in-Go/follow"
 	"Reborn-but-in-Go/message"
 	"Reborn-but-in-Go/submission"
 	"Reborn-but-in-Go/user"
-	"Reborn-but-in-Go/video"
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
 
 	r := gin.Default()
-	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
+	//r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
 
 	// 调用各模块接口
-	video.InitVideoRouter(r)
+	//video.InitVideoRouter(r)
 	submission.InitSubmissionRouter(r)
 	user.InitUserRouter(r)
 
-	favorite.InitFavoriteRouter(r)
+	//favorite.InitFavoriteRouter(r)
 	comment.InitCommentRouter(r)
 	message.InitMessageRouter(r)
 	follow.InitFollowRouter(r)
