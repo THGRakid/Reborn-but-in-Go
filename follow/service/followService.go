@@ -3,16 +3,13 @@ package service
 import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/follow/dao"
+	"Reborn-but-in-Go/user/model"
 )
 
 //	// AddFollowRelation 当前用户关注目标用户
 //	AddFollowRelation(userId int64, targetId int64) (bool, error)
 //	// DeleteFollowRelation 当前用户取消对目标用户的关注
 //	DeleteFollowRelation(userId int64, targetId int64) (bool, error)
-//	// GetFollowing 获取当前用户的关注列表
-//	//GetFollowing(userId int64) ([]User, error)
-//	// GetFollowers 获取当前用户的粉丝列表
-//	//GetFollowers(userId int64) ([]User, error)
 
 // FollowService Service层
 type FollowService struct {
@@ -65,8 +62,9 @@ func (*FollowService) GetFollowerNum(userId int64) (int64, error) {
 	return int64(len(ids)), err
 }
 
-func (*FollowService) GetFollowing(userId int64) ([]User, error) {
-	users := make([]User, 1)
+// GetFollowing 获取用户关注列表
+func (*FollowService) GetFollowing(userId int64) ([]model.User, error) {
+	users := make([]model.User, 1)
 	// 查询出错。
 	if err := config.DB.Raw("select id,`name`,"+
 		"\ncount(if(tag = 'follower' and cancel is not null,1,null)) follower_count,"+
@@ -85,8 +83,8 @@ func (*FollowService) GetFollowing(userId int64) ([]User, error) {
 	return users, nil
 }
 
-func (*FollowService) GetFollowers(userId int64) ([]User, error) {
-	users := make([]User, 1)
+func (*FollowService) GetFollowers(userId int64) ([]model.User, error) {
+	users := make([]model.User, 1)
 	if err := config.DB.Raw("select T.id,T.name,T.follow_cnt follow_count,T.follower_cnt follower_count,if(f.cancel is null,'false','true') is_follow"+
 		"\nfrom follows f right join"+
 		"\n(select fid,id,`name`,"+
