@@ -5,8 +5,7 @@ import (
 	"Reborn-but-in-Go/user/model"
 	"crypto/rand"
 	"encoding/base64"
-	//"gorm.io/driver/mysql"
-	"golang.org/x/crypto/bcrypt"
+
 	"gorm.io/gorm"
 	"strconv"
 	//"gorm.io/gorm/logger"
@@ -100,27 +99,28 @@ func generateAuthToken(userID int64) (string, error) {
 用户登录函数
 参数：username string   用户名
 参数：password string   密码
-返回类型：User对象列表，error
+返回类型：userId，error
 */
-func (dao *UserDao) UserLogin(username, password string) (*model.User, error) {
+func (dao *UserDao) UserLogin(username, password string) (int64, error) {
 	// 根据用户名查询用户信息
 	var user model.User
-	result := config.DB.Where("name = ?", username).First(&user)
+
+	result := config.DB.Table("user").Select("id, password").Where("name = ?", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, errors.New("用户不存在")
+			return 0, errors.New("用户不存在")
 		}
-		return nil, result.Error
+		return 0, result.Error
 	}
 
-	// 验证密码是否匹配
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		return nil, errors.New("密码不正确")
+	// 比较密码
+	if user.Password == password {
+		// 密码正确，返回用户ID
+		return user.Id, nil
 	}
 
-	// 登录成功，返回用户信息
-	user.Status = 1
-	return &user, nil
+	// 密码不正确，返回错误
+	return 0, errors.New("密码不正确")
 }
 
 /*
