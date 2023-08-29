@@ -17,7 +17,7 @@ type FollowController struct {
 
 func NewFollowController(followService *service.FollowService) *FollowController {
 	return &FollowController{
-		FollowService: followService,
+		//FollowService: followService,
 	}
 }
 

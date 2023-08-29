@@ -7,6 +7,7 @@ import (
 )
 
 var (
+	serverIP          = ""
 	serverAddress     = "http://localhost:8080" // 默认服务器地址
 	serverAddressLock sync.RWMutex              // 用于保护服务器地址并发访问
 )

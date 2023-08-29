@@ -1,0 +1,8 @@
+{
+  "redis": {
+    "address": "172.16.32.4",
+    "port": 51910,
+    "password": "ruJKqlee"
+  }
+}
+

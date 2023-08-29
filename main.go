@@ -1,14 +1,31 @@
 package main
 
 import (
-	"Reborn-but-in-Go/config" // 导入config 包
-	"encoding/json"
-	"fmt"
-	"net/http"
+	"Reborn-but-in-Go/comment"
+	"Reborn-but-in-Go/favorite"
+	"Reborn-but-in-Go/message"
+	"Reborn-but-in-Go/video"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	// 获取服务器地址
+
+	r := gin.Default()
+
+	message.InitMessageRouter(r)
+	favorite.InitFavoriteRouter(r)
+	video.InitVideoRouter(r)
+	follow.InitFollowRouter(r)
+	comment.InitCommentRouter(r)
+
+	// 启动服务器并监听在 :8080 端口上
+	if err := r.Run(":8080"); err != nil {
+		panic("Failed to run server: " + err.Error())
+	}
+
+}
+
+/*	// 获取服务器地址
 	serverAddress := config.GetServerAddress()
 
 	// 拼接服务器地址和接口路径
@@ -47,3 +64,4 @@ func SetServerAddressHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Server address configured"))
 }
+*/
