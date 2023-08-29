@@ -2,6 +2,7 @@ package controller
 
 import (
 	favoriteService "Reborn-but-in-Go/favorite/service"
+	followService "Reborn-but-in-Go/follow/service"
 	userDao "Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/video/service"
 	"github.com/gin-gonic/gin"
@@ -11,7 +12,9 @@ import (
 )
 
 type feedController struct {
-	VideoService *service.VideoService
+	VideoService    *service.VideoService
+	FollowService   *followService.FollowService
+	FavoriteService *favoriteService.FavoriteService
 }
 
 // NewFeedController 创建一个新的 FeedController 实例
@@ -92,11 +95,12 @@ func (controller *feedController) Feed(c *gin.Context) {
 			feedUser.IsFollow = false
 			if haveToken {
 				// 查询是否关注
-				tokenStruct, ok := middleware.CheckToken(strToken)
+				tokenStruct, ok := middleware.CheckToken(strToken)    //中间件校验Token
 				if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-					var uid1 = tokenStruct.UserId //用户id
-					var uid2 = v.UserId           //视频发布者id
-					if service.IsFollowing(uid1, uid2) {
+					uid1 := tokenStruct.UserId                                      //用户id
+					uid2 := v.UserId                                                //视频发布者id
+					isFollow, _ := controller.FollowService.IsFollowing(uid1, uid2) //传入两个userId，检查是否关注
+					if isFollow {
 						feedUser.IsFollow = true
 					}
 				}
@@ -111,10 +115,10 @@ func (controller *feedController) Feed(c *gin.Context) {
 			//查询是否点赞过
 			tokenStruct, ok := middleware.CheckToken(strToken)
 			if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-				var uid = tokenStruct.Id //用户id
-				var vid = v.Id           // 视频id
-				var isFavorite, _ = favoriteService.IsFavourite(vid, uid)
-				if isFavorite { //有点赞记录
+				uid := tokenStruct.Id                                             //用户id
+				vid := v.Id                                                       // 视频id
+				isFavorite, _ := controller.FavoriteService.IsFavourite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
+				if isFavorite {                                                   //有点赞记录
 					tmp.IsFavorite = true
 				}
 			}
