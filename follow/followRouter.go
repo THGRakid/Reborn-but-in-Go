@@ -1,4 +1,4 @@
-package main
+package follow
 
 import (
 	"Reborn-but-in-Go/follow/controller"
@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func initFollowRouter(r *gin.Engine) {
+func InitFollowRouter(r *gin.Engine) {
 	// public directory is used to serve static resources
 	r.Static("/static", "./public")
 

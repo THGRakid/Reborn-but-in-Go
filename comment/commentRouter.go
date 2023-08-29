@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func initCommentRouter(r *gin.Engine) {
+func InitCommentRouter(r *gin.Engine) {
 	// public directory is used to serve static resources
 	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
 

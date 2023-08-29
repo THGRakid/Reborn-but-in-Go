@@ -1,4 +1,4 @@
-package main
+package video
 
 import (
 	"Reborn-but-in-Go/video/controller"
@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func initVideoRouter(r *gin.Engine) {
+func InitVideoRouter(r *gin.Engine) {
 	// public directory is used to serve static resources
 	r.Static("/static", "./public")
 	videoDao := dao.NewVideoDaoInstance()

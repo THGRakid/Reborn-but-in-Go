@@ -3,7 +3,11 @@ package main
 import (
 	"Reborn-but-in-Go/comment"
 	"Reborn-but-in-Go/favorite"
+	"Reborn-but-in-Go/follow"
 	"Reborn-but-in-Go/message"
+	"Reborn-but-in-Go/submission"
+	"Reborn-but-in-Go/user"
+	"Reborn-but-in-Go/video"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,11 +15,14 @@ func main() {
 
 	r := gin.Default()
 
-	message.InitMessageRouter(r)
-	favorite.InitFavoriteRouter(r)
-	video.InitvideoRouter(r)
+	// 调用各模块接口
+	video.InitVideoRouter(r)
+	user.InitUserRouter(r)
+	submission.InitSubmissionRouter(r)
 	follow.InitFollowRouter(r)
+	favorite.InitFavoriteRouter(r)
 	comment.InitCommentRouter(r)
+	message.InitMessageRouter(r)
 
 	// 启动服务器并监听在 :8080 端口上
 	if err := r.Run(":8080"); err != nil {

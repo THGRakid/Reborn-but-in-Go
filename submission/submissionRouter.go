@@ -1,4 +1,4 @@
-package main
+package submission
 
 import (
 	"Reborn-but-in-Go/submission/controller"
@@ -7,8 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func main() {
-	r := gin.Default()
+func InitSubmissionRouter(r *gin.Engine) {
+	// public directory is used to serve static resources
+	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
 
 	//创建数据访问层（DAO）的单例实例
 	submissionDao := dao.NewVideoDaoInstance()
@@ -25,8 +26,4 @@ func main() {
 	//注册GET路由，登录用户的视频发布列表，直接列出用户所有投稿过的视频。使用表现层的-----函数。
 	r.GET("/douyin/publish/list/", submissionController.QueryVideoList)
 
-	//启动服务器并监听在 :8080 端口上
-	if err := r.Run(":8080"); err != nil {
-		panic("Failed to run server: " + err.Error())
-	}
 }
