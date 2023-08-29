@@ -22,8 +22,8 @@ func NewUserController(userService *service.UserService) *UserController {
 // CreateUser 注册新用户
 func (c *UserController) CreateUser(ctx *gin.Context) {
 
-	username := ctx.PostForm("username")
-	password := ctx.PostForm("password")
+	username := ctx.Query("username")
+	password := ctx.Query("password")
 
 	userResponse, err := c.UserService.CreateUser(username, password)
 	if err != nil {
@@ -37,8 +37,8 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 // UserLogin 用户登录
 func (c *UserController) UserLogin(ctx *gin.Context) {
 
-	username := ctx.PostForm("username")
-	password := ctx.PostForm("password")
+	username := ctx.Query("username")
+	password := ctx.Query("password")
 
 	userResponse, err := c.UserService.UserLogin(username, password)
 	if err != nil {

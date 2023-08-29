@@ -3,7 +3,6 @@ package dao
 import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/user/model"
-
 	"crypto/rand"
 	"encoding/base64"
 	//"gorm.io/driver/mysql"
@@ -46,7 +45,7 @@ func NewUserDaoInstance() *UserDao {
 /*
 方法一：
 创建用户
-参数：username string用户名, password string密码, nickname string昵称（已删除）
+参数：username string用户名, password string密码
 返回值：id int 用户id，token string 令牌，error错误
 */
 func (dao *UserDao) CreateUser(username string, password string) (int64, string, error) {
@@ -62,8 +61,10 @@ func (dao *UserDao) CreateUser(username string, password string) (int64, string,
 	user.Status = 0
 	user.CreateAt = time.Now()
 
-	//设置密码
+	//设置用户基本信息
+	user.Name = username
 	user.Password = password
+
 	//将user内数据导入数据库
 	result = config.DB.Create(&user)
 	if result.Error != nil {
@@ -104,7 +105,7 @@ func generateAuthToken(userID int64) (string, error) {
 func (dao *UserDao) UserLogin(username, password string) (*model.User, error) {
 	// 根据用户名查询用户信息
 	var user model.User
-	result := config.DB.Where("username = ?", username).First(&user)
+	result := config.DB.Where("name = ?", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.New("用户不存在")

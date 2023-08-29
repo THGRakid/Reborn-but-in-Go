@@ -3,6 +3,7 @@ package service
 import (
 	"Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/user/model"
+	"errors"
 )
 
 // UserService 服务层
@@ -44,12 +45,20 @@ func (s *UserService) CreateUser(username string, password string) (*model.UserR
 // UserLogin 根据用户名和登录密码获取用户id及token
 func (s *UserService) UserLogin(username string, password string) (*model.UserResponse, error) {
 
-	// 调用 UserDao 的 UserLogin方法获取用户id及token
+	// 调用 UserDao 的 UserLogin 方法获取用户信息
+	user, err := s.UserDao.UserLogin(username, password)
+	if err != nil {
+		// 处理错误，例如返回错误信息
+		return nil, err
+	}
 
-	user, _ := s.UserDao.UserLogin(username, password)
+	if user == nil {
+		// 处理用户不存在的情况，例如返回特定错误信息
+		return nil, errors.New("user not found")
+	}
 
 	userId := user.Id
-	token := "1" //需修改
+	token := "1" // 需修改为生成的实际 token
 
 	// 构建 UserResponse 对象，将查询到的消息记录填充进去
 	userResponse := &model.UserResponse{
