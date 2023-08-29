@@ -4,11 +4,11 @@ import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/user/model"
 
+	"crypto/rand"
+	"encoding/base64"
 	//"gorm.io/driver/mysql"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
-	"crypto/rand"
-	"encoding/base64"
 	"strconv"
 	//"gorm.io/gorm/logger"
 	//"fmt"
@@ -46,10 +46,10 @@ func NewUserDaoInstance() *UserDao {
 /*
 方法一：
 创建用户
-参数：username int64用户名, password string密码, nickname string昵称
+参数：username string用户名, password string密码, nickname string昵称（已删除）
 返回值：id int 用户id，token string 令牌，error错误
 */
-func (dao *UserDao) CreateUser(username int64, password string, nickname string) (int64, string, error) {
+func (dao *UserDao) CreateUser(username string, password string) (int64, string, error) {
 	var user model.User
 	// 检查用户名是否已存在
 	existingUser := &model.User{}
@@ -62,6 +62,8 @@ func (dao *UserDao) CreateUser(username int64, password string, nickname string)
 	user.Status = 0
 	user.CreateAt = time.Now()
 
+	//设置密码
+	user.Password = password
 	//将user内数据导入数据库
 	result = config.DB.Create(&user)
 	if result.Error != nil {
@@ -72,6 +74,7 @@ func (dao *UserDao) CreateUser(username int64, password string, nickname string)
 	temp_token, _ := generateAuthToken(user.Id)
 	return user.Id, temp_token, nil
 }
+
 // 生成权限token
 func generateAuthToken(userID int64) (string, error) {
 	// 生成一个随机的字节数组作为令牌
@@ -96,9 +99,9 @@ func generateAuthToken(userID int64) (string, error) {
 用户登录函数
 参数：username string   用户名
 参数：password string   密码
-返回类型：bool （是否创建成功），error
+返回类型：User对象列表，error
 */
-func UserLogin(username, password string) (*model.User, error) {
+func (dao *UserDao) UserLogin(username, password string) (*model.User, error) {
 	// 根据用户名查询用户信息
 	var user model.User
 	result := config.DB.Where("username = ?", username).First(&user)
@@ -115,18 +118,18 @@ func UserLogin(username, password string) (*model.User, error) {
 	}
 
 	// 登录成功，返回用户信息
-	user.Status=1
+	user.Status = 1
 	return &user, nil
 }
 
 /*
 方法三：
-根据用户ID返回用户User指针
+根据用户ID和Token返回用户User指针
 参数：userID int64  用户名
 返回类型：*model.User （查询到的用户），error
 */
 
-func GetUserByID(userID int64) (*model.User, error) {
+func (dao *UserDao) GetUserByID(userID int64) (*model.User, error) {
 	var user model.User
 	result := config.DB.First(&user, userID)
 	if result.Error != nil {
@@ -138,8 +141,8 @@ func GetUserByID(userID int64) (*model.User, error) {
 	return &user, nil
 }
 
-
 /*
+已废弃
 方法四：获取个人关注列表
 根据用户ID查看用户信息
 参数：userID int64  用户名
@@ -154,5 +157,5 @@ func GetFollowing(userID int64) ([]int64, error) {
 		}
 		return nil, result.Error
 	}
-	return 
+	return
 }*/

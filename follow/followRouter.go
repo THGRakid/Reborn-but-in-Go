@@ -1,4 +1,4 @@
-package main
+package follow
 
 import (
 	"Reborn-but-in-Go/follow/controller"
@@ -7,10 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func initFollowRouter(r *gin.Engine) {
-	// public directory is used to serve static resources
-	r.Static("/static", "./public")
-
+func InitFollowRouter(r *gin.Engine) {
 	followDao := dao.NewFollowDaoInstance()
 
 	followService := service.NewFollowService(followDao)

@@ -8,9 +8,6 @@ import (
 )
 
 func InitMessageRouter(r *gin.Engine) {
-	// public directory is used to serve static resources
-	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
-
 	// 创建数据访问层（DAO）的单例实例
 	messageDao := dao.NewMessageDaoInstance()
 
@@ -21,10 +18,10 @@ func InitMessageRouter(r *gin.Engine) {
 	messageController := controller.NewMessageController(messageService)
 
 	// 注册 GET 路由，处理获取聊天消息的请求，使用表现层中的 QueryMessage 函数
-	r.GET("/douyin/message/chat", messageController.QueryMessage)
+	r.GET("/douyin/message/chat/", messageController.QueryMessage)
 	//r.GET("/douyin/message/chat/ws", messageController.HandleWebSocketConnection)
 
 	// 注册 POST 路由，处理发送消息操作的请求，使用表现层中的 SendMessage 函数
-	r.POST("/douyin/message/action", messageController.SendMessage)
+	r.POST("/douyin/message/action/", messageController.SendMessage)
 
 }

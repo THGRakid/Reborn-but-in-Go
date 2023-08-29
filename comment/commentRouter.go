@@ -7,10 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func initCommentRouter(r *gin.Engine) {
-	// public directory is used to serve static resources
-	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
-
+func InitCommentRouter(r *gin.Engine) {
 	// 创建数据访问层（DAO）的单例实例
 	commentDao := dao.NewCommentDaoInstance()
 
@@ -21,9 +18,9 @@ func initCommentRouter(r *gin.Engine) {
 	commentController := controller.NewCommentController(commentService)
 
 	// 注册 GET 路由，处理获取聊天消息的请求，使用表现层中的 QueryMessageList 函数
-	r.GET("/douyin/message/chat", commentController.GetCommentList)
+	r.GET("/douyin/comment/list/", commentController.GetCommentList)
 
 	// 注册 POST 路由，处理发送消息操作的请求，使用表现层中的 SendMessage 函数
-	r.POST("/douyin/message/action", commentController.HandleCommentAction)
+	r.POST("/douyin/comment/action/", commentController.HandleCommentAction)
 
 }

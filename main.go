@@ -3,7 +3,10 @@ package main
 import (
 	"Reborn-but-in-Go/comment"
 	"Reborn-but-in-Go/favorite"
+	"Reborn-but-in-Go/follow"
 	"Reborn-but-in-Go/message"
+	"Reborn-but-in-Go/submission"
+	"Reborn-but-in-Go/user"
 	"Reborn-but-in-Go/video"
 	"github.com/gin-gonic/gin"
 )
@@ -11,15 +14,20 @@ import (
 func main() {
 
 	r := gin.Default()
+	r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎
 
-	message.InitMessageRouter(r)
-	favorite.InitFavoriteRouter(r)
+	// 调用各模块接口
 	video.InitVideoRouter(r)
-	follow.InitFollowRouter(r)
-	comment.InitCommentRouter(r)
+	submission.InitSubmissionRouter(r)
+	user.InitUserRouter(r)
 
-	// 启动服务器并监听在 :8080 端口上
-	if err := r.Run(":8080"); err != nil {
+	favorite.InitFavoriteRouter(r)
+	comment.InitCommentRouter(r)
+	message.InitMessageRouter(r)
+	follow.InitFollowRouter(r)
+
+	// 启动服务器并监听在 :8090 端口上
+	if err := r.Run(":8090"); err != nil {
 		panic("Failed to run server: " + err.Error())
 	}
 
