@@ -10,9 +10,13 @@ import (
 func InitVideoRouter(r *gin.Engine) {
 	// public directory is used to serve static resources
 	r.Static("/static", "./public")
+
 	videoDao := dao.NewVideoDaoInstance()
+
 	videoService := service.NewVideoService(videoDao)
+
 	feedController := controller.NewFeedController(videoService)
-	r.GET("/douyin/feed", feedController.Feed)
+
+	r.GET("/douyin/feed/", feedController.Feed)
 
 }

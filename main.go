@@ -17,15 +17,16 @@ func main() {
 
 	// 调用各模块接口
 	video.InitVideoRouter(r)
-	user.InitUserRouter(r)
 	submission.InitSubmissionRouter(r)
-	follow.InitFollowRouter(r)
+	user.InitUserRouter(r)
+
 	favorite.InitFavoriteRouter(r)
 	comment.InitCommentRouter(r)
 	message.InitMessageRouter(r)
+	follow.InitFollowRouter(r)
 
-	// 启动服务器并监听在 :8080 端口上
-	if err := r.Run(":8080"); err != nil {
+	// 启动服务器并监听在 :8090 端口上
+	if err := r.Run(":8090"); err != nil {
 		panic("Failed to run server: " + err.Error())
 	}
 
