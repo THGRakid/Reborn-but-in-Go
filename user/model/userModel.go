@@ -48,7 +48,7 @@ type LoginResponse struct {
 // UserResponse  用户接口响应结构快
 type UserResponse struct {
 	Response
-	User User `json:"user"` //用户对象
+	User *User `json:"user"` //用户对象
 }
 
 // Token验证实例

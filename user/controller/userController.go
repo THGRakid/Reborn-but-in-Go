@@ -1,10 +1,11 @@
 package controller
 
 import (
+	"Reborn-but-in-Go/middleware"
+	"Reborn-but-in-Go/user/model"
 	"Reborn-but-in-Go/user/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strconv"
 )
 
 // userController 表现层
@@ -52,16 +53,27 @@ func (c *UserController) UserLogin(ctx *gin.Context) {
 
 // GetUserByID 通过id返回用户信息
 func (c *UserController) GetUserByID(ctx *gin.Context) {
-	userIdString := ctx.Query("user_id")
+	middleware.AuthMiddleware()(ctx)
+	//验证Token
+	isAuthenticated, _ := ctx.Get("is_authenticated")
+	if isAuthenticated.(bool) {
+		// token 验证通过，可以继续处理
+		// 获取userId
+		userId := ctx.Query("user_id")
 
-	//将获取的string类型数据改成int64
-	userId, _ := strconv.Atoi(userIdString)
+		userResponse, err := c.UserService.GetUserByID(userId)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{"StatusCode": 1, "StatusMsg": "获取Id失败"})
+			return
+		}
 
-	idResponse, err := c.UserService.GetUserByID(int64(userId))
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败"})
-		return
+		ctx.JSON(http.StatusOK, userResponse)
+
+	} else {
+		// token 验证未通过，返回登录页面
+		ctx.JSON(http.StatusOK, &model.UserResponse{
+			Response: model.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+		})
 	}
 
-	ctx.JSON(http.StatusOK, idResponse)
 }
