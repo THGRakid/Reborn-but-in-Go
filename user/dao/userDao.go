@@ -142,7 +142,7 @@ func (dao *UserDao) UserLogin(username, password string) (int64, string, error) 
 返回类型：*model.User （查询到的用户），error
 */
 
-func (dao *UserDao) GetUserByID(userId string) (*model.User, error) {
+func (dao *UserDao) GetUserByID(userId int64) (*model.User, error) {
 	var user model.User
 
 	result := config.DB.First(&user, userId)

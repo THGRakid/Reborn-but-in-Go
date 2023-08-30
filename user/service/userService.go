@@ -66,7 +66,7 @@ func (s *UserService) UserLogin(username string, password string) (*model.LoginR
 }
 
 // GetUserByID 根据用户ID和Token返回用户User列表
-func (s *UserService) GetUserByID(userId string) (*model.UserResponse, error) {
+func (s *UserService) GetUserByID(userId int64) (*model.UserResponse, error) {
 	user, _ := s.UserDao.GetUserByID(userId)
 
 	userResponse := &model.UserResponse{
