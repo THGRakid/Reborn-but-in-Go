@@ -32,10 +32,26 @@ type UserRequest struct {
 	Password string //密码，最长32个字符
 }
 
+// Response 用户响应状态码
+type Response struct {
+	StatusCode int32  `json:"status_code"`          // 状态码，0-成功，其他值-失败
+	StatusMsg  string `json:"status_msg,omitempty"` // 返回状态描述
+}
+
+// LoginResponse  登录接口响应结构快
+type LoginResponse struct {
+	Response
+	UserId int64  `json:"user_id,omitempty"` // 用户id
+	Token  string `json:"token"`             // 用户鉴权token
+}
+
 // UserResponse  用户接口响应结构快
 type UserResponse struct {
-	StatusCode int32  // 状态码，0-成功，其他值-失败
-	StatusMsg  string // 返回状态描述
-	UserId     int64  // 用户id
-	Token      string // 用户鉴权token
+	Response
+	User User `json:"user"` //用户对象
+}
+
+// Token验证实例
+var TokenInfo = map[string]User{
+	"Token": {},
 }

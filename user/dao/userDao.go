@@ -47,14 +47,17 @@ func NewUserDaoInstance() *UserDao {
 参数：username string用户名, password string密码
 返回值：id int 用户id，token string 令牌，error错误
 */
-func (dao *UserDao) CreateUser(username string, password string) (int64, string, error) {
+func (dao *UserDao) CreateUser(username string, password string) (model.User, string, error) {
+	// 新建user类
 	var user model.User
-	// 检查用户名是否已存在
-	existingUser := &model.User{}
-	result := config.DB.Model(&model.User{}).Where("name = ?", username).First(existingUser)
-	if result.Error == nil {
-		return 0, "", errors.New("用户名已存在")
-	}
+	/*
+		// 检查用户名是否已存在
+		existingUser := &model.User{}
+		result := config.DB.Model(&model.User{}).Where("name = ?", username).First(existingUser)
+		if result.Error == nil {
+			return 0, "", errors.New("用户名已存在")
+		}
+	*/
 
 	// 设置初始状态和创建时间
 	user.Status = 0
@@ -65,14 +68,13 @@ func (dao *UserDao) CreateUser(username string, password string) (int64, string,
 	user.Password = password
 
 	//将user内数据导入数据库
-	result = config.DB.Create(&user)
-	if result.Error != nil {
-		return 0, "", result.Error
-	}
+	config.DB.Create(&user)
 
-	// 创建成功后返回用户 id 和权限token
+	//创建Token并且绑定user
 	temp_token, _ := generateAuthToken(user.Id)
-	return user.Id, temp_token, nil
+
+	// 创建成功后返回 user类型 和权限token
+	return user, temp_token, nil
 }
 
 // 生成权限token

@@ -25,24 +25,29 @@ type IdResponse struct {
 }
 
 // CreateUser 根据用户名和登录密码注册用户id及token
-func (s *UserService) CreateUser(username string, password string) (*model.UserResponse, error) {
+func (s *UserService) CreateUser(username string, password string) (*model.LoginResponse, error) {
 
 	// 调用 UserDao 的 UserLogin方法获取用户id及token
+	user, token, _ := s.UserDao.CreateUser(username, password)
 
-	userId, token, _ := s.UserDao.CreateUser(username, password)
+	if _, exist := model.TokenInfo[token]; exist {
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 1, StatusMsg: "用户已存在"},
+		}, nil
+	} else {
+		model.TokenInfo[token] = user
 
-	// 构建 UserResponse 对象，将查询到的消息记录填充进去
-	userResponse := &model.UserResponse{
-		StatusCode: 0,
-		StatusMsg:  "Success",
-		UserId:     userId,
-		Token:      token,
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 0},
+			UserId:   user.Id,
+			Token:    token,
+		}, nil
 	}
-	return userResponse, nil
+
 }
 
 // UserLogin 根据用户名和登录密码获取用户id及token
-func (s *UserService) UserLogin(username string, password string) (*model.UserResponse, error) {
+func (s *UserService) UserLogin(username string, password string) (*model.LoginResponse, error) {
 
 	// 调用 UserDao 的 UserLogin 方法获取用户信息
 	userId, err := s.UserDao.UserLogin(username, password)
@@ -53,13 +58,12 @@ func (s *UserService) UserLogin(username string, password string) (*model.UserRe
 
 	token := "1" // 需修改为生成的实际 token
 	// 构建 UserResponse 对象，将查询到的消息记录填充进去
-	userResponse := &model.UserResponse{
-		StatusCode: 0,
-		StatusMsg:  "Success",
-		UserId:     userId,
-		Token:      token,
+	loginResponse := &model.LoginResponse{
+		Response: model.Response{StatusCode: 0},
+		UserId:   userId,
+		Token:    token,
 	}
-	return userResponse, nil
+	return loginResponse, nil
 }
 
 // GetUserByID 根据用户ID和Token返回用户User列表

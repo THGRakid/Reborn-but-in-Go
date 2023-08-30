@@ -25,13 +25,14 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 	username := ctx.Query("username")
 	password := ctx.Query("password")
 
-	userResponse, err := c.UserService.CreateUser(username, password)
+	loginResponse, err := c.UserService.CreateUser(username, password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "注册失败"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"StatusCode": 1, "StatusMsg": "用户已存在"})
 		return
 	}
 
-	ctx.JSON(http.StatusOK, userResponse)
+	ctx.JSON(http.StatusOK, loginResponse)
+
 }
 
 // UserLogin 用户登录
