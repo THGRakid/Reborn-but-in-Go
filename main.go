@@ -37,8 +37,12 @@ func main() {
 	message.InitMessageRouter(r)
 	follow.InitFollowRouter(r)
 
+	//输出语句（成功打开服务端）
+	config.Begin()
+
 	// 启动服务器并监听在 :8090 端口上
 	if err := r.Run(":8090"); err != nil {
 		panic("Failed to run server: " + err.Error())
 	}
+
 }
