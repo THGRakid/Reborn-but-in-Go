@@ -4,6 +4,7 @@ import "time"
 
 // Follow 关注模块
 type Follow struct {
+	Id         int64     // 自增ID
 	UserID     int64     // 关注人ID
 	FollowerID int64     // 被关注人ID
 	CreateAt   time.Time // 关注发起时间

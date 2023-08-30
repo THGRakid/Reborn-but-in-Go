@@ -4,6 +4,7 @@ import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/follow/dao"
 	"Reborn-but-in-Go/user/model"
+	"fmt"
 )
 
 //	// AddFollowRelation 当前用户关注目标用户
@@ -65,21 +66,25 @@ func (*FollowService) GetFollowerNum(userId int64) (int64, error) {
 // GetFollowing 获取用户关注列表
 func (*FollowService) GetFollowing(userId int64) ([]model.User, error) {
 	users := make([]model.User, 1)
+
+	fmt.Println("GetFollowing II")
+
 	// 查询出错。
-	if err := config.DB.Raw("select id,`name`,"+
-		"\ncount(if(tag = 'follower' and cancel is not null,1,null)) follower_count,"+
-		"\ncount(if(tag = 'follow' and cancel is not null,1,null)) follow_count,"+
-		"\n 'true' is_follow\nfrom\n("+
-		"\nselect f1.follower_id fid,u.id,`name`,f2.cancel,'follower' tag"+
-		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.cancel = 0"+
-		"\nleft join follows f2 on u.id = f2.user_id and f2.cancel = 0\n\tunion all"+
-		"\nselect f1.follower_id fid,u.id,`name`,f2.cancel,'follow' tag"+
-		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.cancel = 0"+
-		"\nleft join follows f2 on u.id = f2.follower_id and f2.cancel = 0\n) T"+
-		"\nwhere fid = ? group by fid,id,`name`", userId).Scan(&users).Error; nil != err {
+	if err := config.DB.Raw("select id, `name`, "+
+		"\ncount(if(tag = 'follower' and cancel is not null, 1, null)) follower_count,"+
+		"\ncount(if(tag = 'follow' and cancel is not null, 1, null)) follow_count,"+
+		"\n'true' is_follow\nfrom\n("+
+		"\n\tselect f1.follower_id fid, u.id, `name`, f2.cancel, 'follower' tag"+
+		"\n\tfrom follows f1 join users u on f1.user_id = u.id and f1.cancel = 0"+
+		"\n\tleft join follows f2 on u.id = f2.user_id and f2.cancel = 0\n\tunion all"+
+		"\n\tselect f1.follower_id fid, u.id, `name`, f2.cancel, 'follow' tag"+
+		"\n\tfrom follows f1 join users u on f1.user_id = u.id and f1.cancel = 0"+
+		"\n\tleft join follows f2 on u.id = f2.follower_id and f2.cancel = 0\n) T"+
+		"\n\twhere fid = ? group by fid, id,`name`", userId).Scan(&users).Error; nil != err {
 		return nil, err
 	}
 	// 返回关注对象列表。
+	fmt.Println("查询正确")
 	return users, nil
 }
 

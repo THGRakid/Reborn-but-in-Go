@@ -80,11 +80,13 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 // GetFollowing 处理获取关注列表请求。
 func (f *FollowController) GetFollowing(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
-	fmt.Printf(c.Query("user_id"))
-	fmt.Printf("asdsdfsdfsdfsdfsdf")
+
+	fmt.Println(c.Query("user_id"))
+	fmt.Println("GetFollowing")
+
 	// 用户id解析出错。
 	if nil != err {
-		fmt.Printf("用户id格式错误")
+		fmt.Println("用户id格式错误")
 		c.JSON(http.StatusOK, FollowingResp{
 			Response: Response{
 				StatusCode: -1,
@@ -94,11 +96,14 @@ func (f *FollowController) GetFollowing(c *gin.Context) {
 		})
 		return
 	}
+
+	fmt.Printf("GetFollowing")
+
 	// 正常获取关注列表
 	users, err := f.FollowService.GetFollowing(userId)
 	// 获取关注列表时出错。
 	if err != nil {
-		fmt.Printf("获取关注列表时出错")
+		fmt.Println("获取关注列表时出错")
 		c.JSON(http.StatusOK, FollowingResp{
 			Response: Response{
 				StatusCode: -1,

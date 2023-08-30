@@ -14,10 +14,10 @@ func InitFollowRouter(r *gin.Engine) {
 
 	followController := controller.NewFollowController(followService)
 
-	r.POST("/relation/action/", followController.RelationAction)
+	r.POST("/douyin/relation/action/", followController.RelationAction)
 
-	r.GET("/relation/follow/list/", followController.GetFollowing)
+	r.GET("/douyin/relation/follow/list/", followController.GetFollowing)
 
-	r.GET("/relation/follower/list", followController.GetFollowers)
+	r.GET("/douyin/relation/follower/list", followController.GetFollowers)
 
 }
