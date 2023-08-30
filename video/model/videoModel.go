@@ -15,5 +15,5 @@ type Video struct {
 }
 
 func (Video) TableName() string {
-	return "video"
+	return "videos"
 }
