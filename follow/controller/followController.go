@@ -17,7 +17,7 @@ type FollowController struct {
 
 func NewFollowController(followService *service.FollowService) *FollowController {
 	return &FollowController{
-		//FollowService: followService,
+		FollowService: followService,
 	}
 }
 
@@ -80,6 +80,8 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 // GetFollowing 处理获取关注列表请求。
 func (f *FollowController) GetFollowing(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
+	fmt.Printf(c.Query("user_id"))
+	fmt.Printf("asdsdfsdfsdfsdfsdf")
 	// 用户id解析出错。
 	if nil != err {
 		fmt.Printf("用户id格式错误")
