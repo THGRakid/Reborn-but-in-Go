@@ -50,13 +50,12 @@ func (s *UserService) CreateUser(username string, password string) (*model.Login
 func (s *UserService) UserLogin(username string, password string) (*model.LoginResponse, error) {
 
 	// 调用 UserDao 的 UserLogin 方法获取用户信息
-	userId, err := s.UserDao.UserLogin(username, password)
+	userId, token, err := s.UserDao.UserLogin(username, password)
 	if err != nil {
 		// 处理错误，例如返回错误信息
 		return nil, err
 	}
 
-	token := "1" // 需修改为生成的实际 token
 	// 构建 UserResponse 对象，将查询到的消息记录填充进去
 	loginResponse := &model.LoginResponse{
 		Response: model.Response{StatusCode: 0},
@@ -67,13 +66,12 @@ func (s *UserService) UserLogin(username string, password string) (*model.LoginR
 }
 
 // GetUserByID 根据用户ID和Token返回用户User列表
-func (s *UserService) GetUserByID(userId int64) (*IdResponse, error) {
+func (s *UserService) GetUserByID(userId string) (*model.UserResponse, error) {
 	user, _ := s.UserDao.GetUserByID(userId)
 
-	idResponse := &IdResponse{
-		StatusCode: 0,
-		StatusMsg:  "Success",
-		User:       user,
+	userResponse := &model.UserResponse{
+		Response: model.Response{StatusCode: 0},
+		User:     user,
 	}
-	return idResponse, nil
+	return userResponse, nil
 }

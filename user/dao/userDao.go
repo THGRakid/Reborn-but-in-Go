@@ -3,9 +3,7 @@ package dao
 import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/user/model"
-	"crypto/rand"
-	"encoding/base64"
-
+	"github.com/dgrijalva/jwt-go"
 	"gorm.io/gorm"
 	"strconv"
 	//"gorm.io/gorm/logger"
@@ -71,29 +69,40 @@ func (dao *UserDao) CreateUser(username string, password string) (model.User, st
 	config.DB.Create(&user)
 
 	//创建Token并且绑定user
-	temp_token, _ := generateAuthToken(user.Id)
+	token, _ := generateAuthToken(user.Id)
 
 	// 创建成功后返回 user类型 和权限token
-	return user, temp_token, nil
+	return user, token, nil
 }
 
 // 生成权限token
 func generateAuthToken(userID int64) (string, error) {
-	// 生成一个随机的字节数组作为令牌
-	tokenBytes := make([]byte, 32)
-	_, err := rand.Read(tokenBytes)
+	// 检查 Redis 中是否已存在该用户的 token
+	existingToken, err := config.RedisClient.Get(strconv.FormatInt(userID, 10)).Result()
+	if err == nil && existingToken != "" {
+		return existingToken, nil
+	}
+
+	// 生成 JWT
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["user_id"] = userID
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // 设置 token 过期时间为一天
+
+	// 签署 token
+	jwtSecret := []byte("Reborn_but_in_Go") //暂时先设成硬编码
+	tokenString, err := token.SignedString(jwtSecret)
 	if err != nil {
 		return "", err
 	}
 
-	// 将字节数组进行Base64编码，生成字符串作为令牌
-	token := base64.StdEncoding.EncodeToString(tokenBytes)
+	// 存储生成的 token 到 Redis
+	err = config.RedisClient.Set(strconv.FormatInt(userID, 10), tokenString, 0).Err()
+	if err != nil {
+		return "", err
+	}
 
-	// 将userID与令牌进行组合，以确保唯一性
-	userIDString := strconv.FormatInt(userID, 10)
-	token = userIDString + "-" + token
-
-	return token, nil
+	return tokenString, nil
 }
 
 /*
@@ -101,40 +110,42 @@ func generateAuthToken(userID int64) (string, error) {
 用户登录函数
 参数：username string   用户名
 参数：password string   密码
-返回类型：userId，error
+返回类型：userId，token, error
 */
-func (dao *UserDao) UserLogin(username, password string) (int64, error) {
+func (dao *UserDao) UserLogin(username, password string) (int64, string, error) {
 	// 根据用户名查询用户信息
 	var user model.User
 
 	result := config.DB.Table("user").Select("id, password").Where("name = ?", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return 0, errors.New("用户不存在")
+			return 0, "", errors.New("用户不存在")
 		}
-		return 0, result.Error
+		return 0, "", result.Error
 	}
 
 	// 比较密码
 	if user.Password == password {
 		// 密码正确，返回用户ID
-		return user.Id, nil
+		token, _ := generateAuthToken(user.Id)
+		return user.Id, token, nil
 	}
 
 	// 密码不正确，返回错误
-	return 0, errors.New("密码不正确")
+	return 0, "", errors.New("密码不正确")
 }
 
 /*
 方法三：
-根据用户ID和Token返回用户User指针
-参数：userID int64  用户名
+根据用户Token返回用户User指针
+参数：userId string  用户Id
 返回类型：*model.User （查询到的用户），error
 */
 
-func (dao *UserDao) GetUserByID(userID int64) (*model.User, error) {
+func (dao *UserDao) GetUserByID(userId string) (*model.User, error) {
 	var user model.User
-	result := config.DB.First(&user, userID)
+
+	result := config.DB.First(&user, userId)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.New("用户不存在")

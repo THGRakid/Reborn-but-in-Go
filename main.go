@@ -2,14 +2,27 @@ package main
 
 import (
 	"Reborn-but-in-Go/comment"
+	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/follow"
 	"Reborn-but-in-Go/message"
 	"Reborn-but-in-Go/submission"
 	"Reborn-but-in-Go/user"
 	"github.com/gin-gonic/gin"
+	"sync"
 )
 
 func main() {
+
+	var wg sync.WaitGroup
+	// 初始化 Redis 客户端
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		config.InitRedis()
+	}()
+
+	// 等待 Redis 客户端初始化完成
+	wg.Wait()
 
 	r := gin.Default()
 	//r.Static("/static", "./public") // 创建一个默认的 Gin 路由引擎

@@ -1,17 +1,16 @@
 package config
 
-/*
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/go-redis/redis/v8"
-	"golang.org/x/net/context"
+	"github.com/go-redis/redis"
 	"io"
 	"os"
+	"path/filepath"
 )
 
-// 定义一个结构体来存储配置信息
-type Config struct {
+// 存储从 JSON 配置文件中读取的 Redis 配置信息
+type RedisConfig struct {
 	Redis struct {
 		Address  string `json:"IP地址"`
 		Port     int    `json:"端口"`
@@ -19,50 +18,68 @@ type Config struct {
 	} `json:"redis"`
 }
 
-func init() {
-	// 打开配置文件
-	configFile, err := os.Open("redis.json")
-	if err != nil {
-		fmt.Println("Error opening config file:", err)
-		return
-	}
-	// 在函数返回之前延迟执行 configFile.Close()，确保文件会被关闭
-	defer func(configFile *os.File) {
-		err := configFile.Close()
-		if err != nil {
+// 可以调用的客户端
+var RedisClient *redis.Client
 
-		}
-	}(configFile)
-
-	// 读取配置文件的内容
-	configBytes, _ := io.ReadAll(configFile)
-
-	// 解析 JSON 格式的配置文件内容到 Config 结构体（反序列化）
-	var config Config
-	err = json.Unmarshal(configBytes, &config)
-	if err != nil {
-		fmt.Println("Error parsing config:", err)
-		return
-	}
-
-	// 配置 Redis 客户端
-	ctx := context.Background()
+// 配置并创建 Redis 客户端连接
+func setupRedisClient(config RedisConfig) (*redis.Client, error) {
 	options := &redis.Options{
-		Addr:     fmt.Sprintf("%s:%d", config.Redis.Address, config.Redis.Port), //拼接成完整的地址字符串
-		Password: config.Redis.Password,                                         //提取密码
-		DB:       0,                                                             //默认使用索引为 0 的数据库
+		Addr:     fmt.Sprintf("%s:%d", config.Redis.Address, config.Redis.Port),
+		Password: "", //设置无密码
+		DB:       0,
 	}
 	client := redis.NewClient(options)
 
-	// 测试连接
-	pong, err := client.Ping(ctx).Result()
+	// 连接测试
+	pong, err := client.Ping().Result()
 	if err != nil {
-		fmt.Println("Error connecting to Redis:", err)
-		return
+		return nil, fmt.Errorf("Redis 打开错误: %v", err)
 	}
-	fmt.Println("Connected to Redis:", pong)
+	fmt.Println("正在连接 Redis :", pong)
 
+	return client, nil
 }
 
+func InitRedis() {
+	currentDir, err := os.Getwd()
+	if err != nil {
+		fmt.Println("获取当前工作目录错误:", err)
+		return
+	}
+	// 构建 redis.json 的完整路径
+	configFilePath := filepath.Join(currentDir, "\\config\\redis.json")
 
-*/
+	// 打开 redis.json 配置文件
+	configFile, err := os.Open(configFilePath)
+	if err != nil {
+		fmt.Println("配置文件打开错误:", err)
+		return
+	}
+	defer func(configFile *os.File) {
+		err := configFile.Close()
+		if err != nil {
+			fmt.Println("配置文件关闭错误:", err)
+		}
+	}(configFile)
+
+	configBytes, err := io.ReadAll(configFile)
+	if err != nil {
+		fmt.Println("配置文件读取错误:", err)
+		return
+	}
+
+	var config RedisConfig
+	err = json.Unmarshal(configBytes, &config)
+	if err != nil {
+		fmt.Println("读取文件错误:", err)
+		return
+	}
+
+	RedisClient, err = setupRedisClient(config)
+	if err != nil {
+		fmt.Println("初始化 Redis 客户端错误:", err)
+		return
+	}
+
+	fmt.Println("Redis 客户端初始化成功")
+}
