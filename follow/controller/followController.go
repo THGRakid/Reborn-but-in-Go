@@ -80,10 +80,6 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 // GetFollowing 处理获取关注列表请求。
 func (f *FollowController) GetFollowing(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
-
-	fmt.Println(c.Query("user_id"))
-	fmt.Println("GetFollowing")
-
 	// 用户id解析出错。
 	if nil != err {
 		fmt.Println("用户id格式错误")
@@ -96,13 +92,10 @@ func (f *FollowController) GetFollowing(c *gin.Context) {
 		})
 		return
 	}
-
-	fmt.Printf("GetFollowing")
-
 	// 正常获取关注列表
 	users, err := f.FollowService.GetFollowing(userId)
-	// 获取关注列表时出错。
 	if err != nil {
+		// 获取关注列表时出错。
 		fmt.Println("获取关注列表时出错")
 		c.JSON(http.StatusOK, FollowingResp{
 			Response: Response{
@@ -113,7 +106,7 @@ func (f *FollowController) GetFollowing(c *gin.Context) {
 		})
 		return
 	} else {
-		// 成功获取到关注列表。
+		// 获取关注列表成功。
 		log.Println("获取关注列表成功。")
 		c.JSON(http.StatusOK, FollowingResp{
 			UserList: users,
@@ -142,8 +135,8 @@ func (f *FollowController) GetFollowers(c *gin.Context) {
 	}
 	// 正常获取粉丝列表
 	users, err := f.FollowService.GetFollowers(userId)
-	// 获取关注列表时出错。
 	if err != nil {
+		// 获取粉丝列表时出错。
 		c.JSON(http.StatusOK, FollowersResp{
 			Response: Response{
 				StatusCode: -1,
@@ -152,14 +145,16 @@ func (f *FollowController) GetFollowers(c *gin.Context) {
 			UserList: nil,
 		})
 		return
+	} else {
+		// 获取粉丝列表成功。
+		log.Println("获取粉丝列表成功。")
+		c.JSON(http.StatusOK, FollowersResp{
+			Response: Response{
+				StatusCode: 0,
+				StatusMsg:  "OK",
+			},
+			UserList: users,
+		})
+		return
 	}
-	// 成功获取到粉丝列表。
-	//log.Println("获取粉丝列表成功。")
-	c.JSON(http.StatusOK, FollowersResp{
-		Response: Response{
-			StatusCode: 0,
-			StatusMsg:  "OK",
-		},
-		UserList: users,
-	})
 }

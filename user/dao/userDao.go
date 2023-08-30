@@ -76,9 +76,9 @@ func (dao *UserDao) CreateUser(username string, password string) (model.User, st
 }
 
 // 生成权限token
-func generateAuthToken(userId int64) (string, error) {
+func generateAuthToken(userID int64) (string, error) {
 	// 检查 Redis 中是否已存在该用户的 token
-	existingToken, err := config.RedisClient.Get(strconv.FormatInt(userId, 10)).Result()
+	existingToken, err := config.RedisClient.Get(strconv.FormatInt(userID, 10)).Result()
 	if err == nil && existingToken != "" {
 		return existingToken, nil
 	}
@@ -86,7 +86,7 @@ func generateAuthToken(userId int64) (string, error) {
 	// 生成 JWT
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
-	claims["user_id"] = userId
+	claims["user_id"] = userID
 	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() // 设置 token 过期时间为一天
 
 	// 签署 token
@@ -97,7 +97,7 @@ func generateAuthToken(userId int64) (string, error) {
 	}
 
 	// 存储生成的 token 到 Redis
-	err = config.RedisClient.Set(strconv.FormatInt(userId, 10), tokenString, 0).Err()
+	err = config.RedisClient.Set(strconv.FormatInt(userID, 10), tokenString, 0).Err()
 	if err != nil {
 		return "", err
 	}
@@ -116,7 +116,7 @@ func (dao *UserDao) UserLogin(username, password string) (int64, string, error) 
 	// 根据用户名查询用户信息
 	var user model.User
 
-	result := config.DB.Table("users").Select("id, password").Where("name = ?", username).First(&user)
+	result := config.DB.Table("user").Select("id, password").Where("name = ?", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return 0, "", errors.New("用户不存在")
@@ -142,10 +142,10 @@ func (dao *UserDao) UserLogin(username, password string) (int64, string, error) 
 返回类型：*model.User （查询到的用户），error
 */
 
-func (dao *UserDao) GetUserByID(Id int64) (*model.User, error) {
+func (dao *UserDao) GetUserByID(userId int64) (*model.User, error) {
 	var user model.User
 
-	result := config.DB.First(&user, Id)
+	result := config.DB.First(&user, userId)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			return nil, errors.New("用户不存在")
