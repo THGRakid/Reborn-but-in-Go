@@ -6,6 +6,7 @@ import (
 	"Reborn-but-in-Go/user/service"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 // userController 表现层
@@ -59,9 +60,9 @@ func (c *UserController) GetUserByID(ctx *gin.Context) {
 	if isAuthenticated.(bool) {
 		// token 验证通过，可以继续处理
 		// 获取userId
-		userId := ctx.Query("user_id")
-
-		userResponse, err := c.UserService.GetUserByID(userId)
+		userIdString := ctx.Query("user_id")
+		userId, _ := strconv.Atoi(userIdString)
+		userResponse, err := c.UserService.GetUserByID(int64(userId))
 		if err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"StatusCode": 1, "StatusMsg": "获取Id失败"})
 			return
