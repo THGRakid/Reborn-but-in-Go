@@ -71,16 +71,16 @@ func (*FollowService) GetFollowing(userId int64) ([]model.User, error) {
 
 	// 查询出错。
 	if err := config.DB.Raw("select id, `name`, "+
-		"\ncount(if(tag = 'follower' and cancel is not null, 1, null)) follower_count,"+
-		"\ncount(if(tag = 'follow' and cancel is not null, 1, null)) follow_count,"+
+		"\ncount(if(tag = 'follower' and status is not null, 1, null)) follower_count,"+
+		"\ncount(if(tag = 'follow' and status is not null, 1, null)) follow_count,"+
 		"\n'true' is_follow\nfrom\n("+
-		"\n\tselect f1.follower_id fid, u.id, `name`, f2.cancel, 'follower' tag"+
-		"\n\tfrom follows f1 join users u on f1.user_id = u.id and f1.cancel = 0"+
-		"\n\tleft join follows f2 on u.id = f2.user_id and f2.cancel = 0\n\tunion all"+
-		"\n\tselect f1.follower_id fid, u.id, `name`, f2.cancel, 'follow' tag"+
-		"\n\tfrom follows f1 join users u on f1.user_id = u.id and f1.cancel = 0"+
-		"\n\tleft join follows f2 on u.id = f2.follower_id and f2.cancel = 0\n) T"+
-		"\n\twhere fid = ? group by fid, id,`name`", userId).Scan(&users).Error; nil != err {
+		"\nselect f1.follower_id fid, u.id, `name`, f2.status, 'follower' tag"+
+		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.status = 0"+
+		"\nleft join follows f2 on u.id = f2.user_id and f2.status = 0\n\tunion all"+
+		"\nselect f1.follower_id fid, u.id, `name`, f2.status, 'follow' tag"+
+		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.status = 0"+
+		"\nleft join follows f2 on u.id = f2.follower_id and f2.status = 0\n) T"+
+		"\nwhere fid = ? group by fid, id,`name`", userId).Scan(&users).Error; nil != err {
 		return nil, err
 	}
 	// 返回关注对象列表。
@@ -90,21 +90,21 @@ func (*FollowService) GetFollowing(userId int64) ([]model.User, error) {
 
 func (*FollowService) GetFollowers(userId int64) ([]model.User, error) {
 	users := make([]model.User, 1)
-	if err := config.DB.Raw("select T.id,T.name,T.follow_cnt follow_count,T.follower_cnt follower_count,if(f.cancel is null,'false','true') is_follow"+
+	if err := config.DB.Raw("select T.id,T.name,T.follow_cnt follow_count,T.follower_cnt follower_count,if(f.status is null,'false','true') is_follow"+
 		"\nfrom follows f right join"+
 		"\n(select fid,id,`name`,"+
-		"\ncount(if(tag = 'follower' and cancel is not null,1,null)) follower_cnt,"+
-		"\ncount(if(tag = 'follow' and cancel is not null,1,null)) follow_cnt"+
+		"\ncount(if(tag = 'follower' and status is not null,1,null)) follower_cnt,"+
+		"\ncount(if(tag = 'follow' and status is not null,1,null)) follow_cnt"+
 		"\nfrom("+
-		"\nselect f1.user_id fid,u.id,`name`,f2.cancel,'follower' tag"+
-		"\nfrom follows f1 join users u on f1.follower_id = u.id and f1.cancel = 0"+
-		"\nleft join follows f2 on u.id = f2.user_id and f2.cancel = 0"+
+		"\nselect f1.user_id fid,u.id,`name`,f2.status,'follower' tag"+
+		"\nfrom follows f1 join users u on f1.follower_id = u.id and f1.status = 0"+
+		"\nleft join follows f2 on u.id = f2.user_id and f2.status = 0"+
 		"\nunion all"+
-		"\nselect f1.user_id fid,u.id,`name`,f2.cancel,'follow' tag"+
-		"\nfrom follows f1 join users u on f1.follower_id = u.id and f1.cancel = 0"+
-		"\nleft join follows f2 on u.id = f2.follower_id and f2.cancel = 0"+
+		"\nselect f1.user_id fid,u.id,`name`,f2.status,'follow' tag"+
+		"\nfrom follows f1 join users u on f1.follower_id = u.id and f1.status = 0"+
+		"\nleft join follows f2 on u.id = f2.follower_id and f2.status = 0"+
 		"\n) T group by fid,id,`name`"+
-		"\n) T on f.user_id = T.id and f.follower_id = T.fid and f.cancel = 0 where fid = ?", userId).
+		"\n) T on f.user_id = T.id and f.follower_id = T.fid and f.status = 0 where fid = ?", userId).
 		Scan(&users).Error; nil != err {
 		// 查询出错。
 		return nil, err

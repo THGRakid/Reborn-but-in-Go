@@ -26,7 +26,7 @@ func (User) TableName() string {
 	return "user"
 }
 
-// UserRequest用户接口请求结构块
+// UserRequest 用户接口请求结构块
 type UserRequest struct {
 	Username string //注册用户名，最长32个字符
 	Password string //密码，最长32个字符
