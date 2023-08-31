@@ -6,6 +6,7 @@ import (
 	"github.com/go-redis/redis"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
 
@@ -41,6 +42,31 @@ func setupRedisClient(config RedisConfig) (*redis.Client, error) {
 }
 
 func InitRedis() {
+	// 检查 Redis 服务器是否已经在运行
+	cmd := exec.Command("redis-cli", "ping")
+	err := cmd.Run()
+	if err == nil {
+		fmt.Println("Redis 服务器已经在运行")
+		// 如果已经运行，直接返回
+		return
+	}
+
+	// 如果 Redis 服务器没有在运行，则启动它
+	startCmd := exec.Command("redis-server")
+	startErr := startCmd.Start()
+	if startErr != nil {
+		fmt.Println("启动 Redis 服务器错误:", startErr)
+		return
+	}
+	defer func() {
+		// 在退出前停止 Redis 服务器
+		err := startCmd.Process.Kill()
+		if err != nil {
+			fmt.Println("停止 Redis 服务器错误:", err)
+		}
+	}()
+
+	//启动 Redis 客户端
 	currentDir, err := os.Getwd()
 	if err != nil {
 		fmt.Println("获取当前工作目录错误:", err)
