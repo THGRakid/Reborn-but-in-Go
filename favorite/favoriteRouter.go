@@ -20,7 +20,7 @@ func InitFavoriteRouter(r *gin.Engine) {
 	// 注册 GET 路由，处理点赞，使用表现层中的 FavoriteAction 函数
 	r.POST("/douyin/favorite/action/", favoriteController.FavoriteAction)
 
-	// 注册 POST 路由，处理点赞列表，使用表现层中的 GetFavouriteList 函数
+	// 注册 POST 路由，处理点赞列表，使用表现层中的 GetFavoriteList 函数
 	r.GET("/douyin/favorite/list/", favoriteController.GetFavoriteList)
 
 }
