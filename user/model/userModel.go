@@ -22,17 +22,17 @@ type User struct {
 }
 
 type UserForUsed struct {
-	Id              int64  //用户id
-	Name            string //用户名称（不重复）
-	FollowCount     int64  //关注人数
-	FollowerCount   int64  //粉丝人数
-	IsFollow        bool   // true-已关注，false-未关注
-	Avatar          string //用户头像
-	BackgroundImage string //背景图像
-	Signature       string //个人简介
-	TotalFavorited  int64  //获赞数
-	WorkCount       int64  //作品数
-	FavoriteCount   int64  //点赞数
+	Id              int64  `json:"id,omitempty"`               //用户id
+	Name            string `json:"name,omitempty"`             //用户名称（不重复）
+	FollowCount     int64  `json:"follow_count,omitempty"`     //关注人数
+	FollowerCount   int64  `json:"follower_count,omitempty"`   //粉丝人数
+	IsFollow        bool   `json:"is_follow,omitempty"`        // true-已关注，false-未关注
+	Avatar          string `json:"avatar,omitempty"`           //用户头像
+	BackgroundImage string `json:"background_image,omitempty"` //背景图像
+	Signature       string `json:"signature,omitempty"`        //个人简介
+	TotalFavorited  int64  `json:"total_favorited,omitempty"`  //获赞数
+	WorkCount       int64  `json:"work_count"`                 //作品数
+	FavoriteCount   int64  `json:"favorite_count,omitempty"`   //点赞数
 }
 
 // TableName 修改表名映射
