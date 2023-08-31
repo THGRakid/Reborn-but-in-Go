@@ -25,7 +25,7 @@ func NewVideoService(videoDao *dao.VideoDao) *VideoService {
 	}
 }
 
-const videoNum = 30 //feed每次返回的视频数量
+const videoNum = 5 //feed每次返回的视频数量
 // FeedGet 获得视频列表
 func FeedGet(lastTime int64) ([]model.Video, error) {
 	//t := time.Now()
