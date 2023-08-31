@@ -3,6 +3,7 @@ package service
 import (
 	"Reborn-but-in-Go/submission/dao"
 	"Reborn-but-in-Go/submission/model"
+	"Reborn-but-in-Go/video/service"
 	"fmt"
 	"time"
 )
@@ -22,10 +23,20 @@ func NewSubmissionService(submissionDao *dao.SubmissionDao) *SubmissionService {
 
 // 假定视频地址和封面地址，如何获取呢？
 var VideoPath string = ""
-var CoverPath string = ""
 
 // 1、投稿视频 ？？？data怎么处理？？？
 func (s *SubmissionService) CreateVideo(userId int64, data []byte, title string) error {
+
+	//调用videoService的 GetCoverPath 函数，获取封面地址
+	CoverPath, err1 := service.GetCoverPath(VideoPath, 1)
+	//失败则无法投稿
+	if err1 != nil {
+		fmt.Println("Service:Failed to get coverPath from videoService")
+		return err1
+	}
+
+	//需要处理视频数据data，得到视频地址
+
 	video := &model.Video{
 		UserId:        userId,
 		VideoPath:     VideoPath,
@@ -38,9 +49,9 @@ func (s *SubmissionService) CreateVideo(userId int64, data []byte, title string)
 	}
 
 	//调用 DAO 的CreateVideo 方法来保存消息到数据库
-	err := s.SubmissionDao.CreateVideo(video)
-	if err != nil {
-		return err
+	err2 := s.SubmissionDao.CreateVideo(video)
+	if err2 != nil {
+		return err2
 	}
 	return nil
 }
