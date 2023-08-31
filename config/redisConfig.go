@@ -19,6 +19,41 @@ type RedisConfig struct {
 	} `json:"redis"`
 }
 
+var redisProcess *os.Process
+
+// 启动 Redis 服务端
+func startRedisServer() error {
+	// 启动 Redis 服务器
+	cmd := exec.Command("redis-server")
+	err := cmd.Start()
+	if err != nil {
+		return fmt.Errorf("启动 Redis 服务器错误: %v", err)
+	}
+	redisProcess = cmd.Process
+	return nil
+}
+
+// 检查服务端是否开启
+func InitRedisServer() {
+	// 检查 Redis 服务器是否已经在运行
+	cmd := exec.Command("redis-cli", "ping")
+	err := cmd.Run()
+	if err == nil {
+		fmt.Println("Redis 服务器已经在运行")
+		// 如果已经运行，直接初始化 Redis 客户端并返回
+		return
+	}
+
+	// 如果 Redis 服务器没有在运行，则启动它
+	startErr := startRedisServer()
+	if startErr != nil {
+		fmt.Println(startErr)
+		return
+	}
+	fmt.Println("Redis 客户端初始化成功")
+	return
+}
+
 // 可以调用的客户端
 var RedisClient *redis.Client
 
@@ -42,29 +77,8 @@ func setupRedisClient(config RedisConfig) (*redis.Client, error) {
 }
 
 func InitRedis() {
-	// 检查 Redis 服务器是否已经在运行
-	cmd := exec.Command("redis-cli", "ping")
-	err := cmd.Run()
-	if err == nil {
-		fmt.Println("Redis 服务器已经在运行")
-		// 如果已经运行，直接返回
-		return
-	}
-
-	// 如果 Redis 服务器没有在运行，则启动它
-	startCmd := exec.Command("redis-server")
-	startErr := startCmd.Start()
-	if startErr != nil {
-		fmt.Println("启动 Redis 服务器错误:", startErr)
-		return
-	}
-	defer func() {
-		// 在退出前停止 Redis 服务器
-		err := startCmd.Process.Kill()
-		if err != nil {
-			fmt.Println("停止 Redis 服务器错误:", err)
-		}
-	}()
+	//启动 Redis 服务端
+	InitRedisServer()
 
 	//启动 Redis 客户端
 	currentDir, err := os.Getwd()
