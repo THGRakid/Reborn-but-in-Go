@@ -37,7 +37,7 @@ func FeedGet(lastTime int64) ([]model.Video, error) {
 	fmt.Println("查询的时间", strTime)
 	var VideoList []model.Video
 	VideoList = make([]model.Video, 0)
-	err := config.DB.Model(&model.Video{}).Where("time < ?", strTime).Order("time desc").Limit(videoNum).Find(&VideoList).Error
+	err := config.DB.Model(&model.Video{}).Where("create_at < ?", strTime).Order("create_at desc").Limit(videoNum).Find(&VideoList).Error
 	return VideoList, err
 }
 

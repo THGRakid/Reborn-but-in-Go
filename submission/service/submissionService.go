@@ -33,7 +33,7 @@ func (s *SubmissionService) CreateVideo(userId int64, data []byte, title string)
 		FavoriteCount: 0,
 		CommentCount:  0,
 		Title:         title,
-		Time:          time.Now(),
+		CreateAt:      time.Now(),
 		Status:        1,
 	}
 

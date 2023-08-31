@@ -31,7 +31,7 @@ func (s *CommentService) GetCommentIdListByVideoId(videoId int64) ([]int64, erro
 // CreateComment 发表评论
 func (s *CommentService) CreateComment(comment model.Comment) (model.Comment, error) {
 	// 设置评论的默认属性
-	comment.Time = time.Now()
+	comment.CreateAt = time.Now()
 	comment.Status = 1 // 设置默认状态为有效
 
 	// 调用 CommentDao 的 InsertComment 方法插入评论
