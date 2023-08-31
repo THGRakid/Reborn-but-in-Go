@@ -6,7 +6,6 @@ import (
 	"github.com/go-redis/redis"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
 )
 
@@ -42,22 +41,6 @@ func setupRedisClient(config RedisConfig) (*redis.Client, error) {
 }
 
 func InitRedis() {
-	// 启动 Redis 服务器
-	cmd := exec.Command("redis-server")
-	err := cmd.Start()
-	if err != nil {
-		fmt.Println("启动 Redis 服务器错误:", err)
-		return
-	}
-	defer func() {
-		// 在退出前停止 Redis 服务器
-		err := cmd.Process.Kill()
-		if err != nil {
-			fmt.Println("停止 Redis 服务器错误:", err)
-		}
-	}()
-
-	//启动 Redis 客户端
 	currentDir, err := os.Getwd()
 	if err != nil {
 		fmt.Println("获取当前工作目录错误:", err)
