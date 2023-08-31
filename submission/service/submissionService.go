@@ -37,21 +37,22 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 	videoName = fmt.Sprintf("%d_%s", userId, videoName)
 	//将最终视频文件保存至本地
 	workPath, _ := os.Getwd()
-	videoPath := workPath + "/static/videos" + videoName
-	//调用videoService的 GetCoverPath 函数，获取封面地址
-	CoverPath, err1 := service.GetCoverPath(videoPath, 1)
-	//失败则无法投稿
-	if err1 != nil {
-		fmt.Println("Service:Failed to get coverPath from videoService")
-		return err1
-	}
-
+	videoPath := workPath + "/static/videos/" + videoName
 	if err := ctx.SaveUploadedFile(data, videoPath); err != nil {
 		ctx.JSON(http.StatusOK, gin.H{"status_code": 1, "status_msg": "Failed to save video to host"})
+		return err
 	}
-
+	//调用videoService的 GetCoverPath 函数，获取封面地址
+	CoverPath, err := service.GetCoverPath(videoPath, 1)
+	//失败则无法投稿
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to get covers from videoService",
+		})
+		return err
+	}
 	//需要处理视频数据data，得到视频地址
-
 	video := &model.Video{
 		UserId:        userId,
 		VideoPath:     videoPath,
