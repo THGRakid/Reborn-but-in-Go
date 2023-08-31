@@ -10,7 +10,7 @@ type Video struct {
 	FavoriteCount int64     //点赞数
 	CommentCount  int64     //评论数
 	Title         string    //视频标题
-	Time          time.Time //投稿时间
+	CreateAt      time.Time //投稿时间
 	Status        int32     //待审核0 发布成功1 审核失败2 下架删除3
 }
 

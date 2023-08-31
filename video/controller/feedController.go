@@ -139,7 +139,7 @@ func (controller *feedController) Feed(c *gin.Context) {
 		}
 		tmp.Title = v.Title
 		feedVideoList = append(feedVideoList, tmp)
-		newTime = v.Time.Unix()
+		newTime = v.CreateAt.Unix()
 	}
 	if len(feedVideoList) > 0 {
 		c.JSON(http.StatusOK, FeedResponse{

@@ -43,12 +43,12 @@ func (*SubmissionDao) CreateVideo(video *model.Video) error {
 
 // 2、视频列表。根据userID，查出video列表
 func (*SubmissionDao) QueryVideoList(userId int64) ([]*model.Video, error) {
-	var videos []*model.Video
+	var video []*model.Video
 	//根据user_id查询视频列表，按从大到小排序
-	err := config.DB.Where("user_id = ?", userId).Order("time desc").Find(&videos).Error
+	err := config.DB.Where("user_id = ?", userId).Order("create_at desc").Find(&video).Error
 	if err != nil {
 		fmt.Println("Failed to get video list")
 		return nil, err
 	}
-	return videos, nil
+	return video, nil
 }
