@@ -64,7 +64,7 @@ func (*CommentDao) InsertComment(comment model.Comment) (model.Comment, error) {
 
 	// 在评论结构体中设置默认值
 	comment.Status = 1
-	comment.Time = time.Now()
+	comment.CreateAt = time.Now()
 
 	// 向数据库插入一条评论信息
 	err := config.DB.Model(&model.Comment{}).Create(&comment).Error
@@ -107,7 +107,7 @@ func (*CommentDao) GetCommentList(videoId int64) ([]model.Comment, error) {
 	// 查询评论信息列表，按时间倒序排列
 	var commentList []model.Comment
 	result := config.DB.Model(&model.Comment{}).Where(map[string]interface{}{"video_id": videoId, "status": 1}).
-		Order("time desc").Find(&commentList)
+		Order("create_at desc").Find(&commentList)
 
 	// 若没有评论信息，返回空列表而不是错误
 	if result.RowsAffected == 0 {
