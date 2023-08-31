@@ -5,6 +5,11 @@ import (
 	"Reborn-but-in-Go/submission/model"
 	"Reborn-but-in-Go/video/service"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 )
 
@@ -22,24 +27,34 @@ func NewSubmissionService(submissionDao *dao.SubmissionDao) *SubmissionService {
 }
 
 // 假定视频地址和封面地址，如何获取呢？
-var VideoPath string = ""
+//var VideoPath string = ""
 
 // 1、投稿视频 ？？？data怎么处理？？？
-func (s *SubmissionService) CreateVideo(userId int64, data []byte, title string) error {
-
+func (s *SubmissionService) CreateVideo(userId int64, title string, data *multipart.FileHeader, ctx *gin.Context) error {
+	//获取文件名
+	videoName := filepath.Base(data.Filename)
+	//将userid和视频文件名进行拼接得到最终视频文件名
+	videoName = fmt.Sprintf("%d_%s", userId, videoName)
+	//将最终视频文件保存至本地
+	workPath, _ := os.Getwd()
+	videoPath := workPath + "/static/videos" + videoName
 	//调用videoService的 GetCoverPath 函数，获取封面地址
-	CoverPath, err1 := service.GetCoverPath(VideoPath, 1)
+	CoverPath, err1 := service.GetCoverPath(videoPath, 1)
 	//失败则无法投稿
 	if err1 != nil {
 		fmt.Println("Service:Failed to get coverPath from videoService")
 		return err1
 	}
 
+	if err := ctx.SaveUploadedFile(data, videoPath); err != nil {
+		ctx.JSON(http.StatusOK, gin.H{"status_code": 1, "status_msg": "Failed to save video to host"})
+	}
+
 	//需要处理视频数据data，得到视频地址
 
 	video := &model.Video{
 		UserId:        userId,
-		VideoPath:     VideoPath,
+		VideoPath:     videoPath,
 		CoverPath:     CoverPath,
 		FavoriteCount: 0,
 		CommentCount:  0,
