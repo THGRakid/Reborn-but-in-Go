@@ -23,7 +23,7 @@ type User struct {
 
 // TableName 修改表名映射
 func (User) TableName() string {
-	return "user"
+	return "users"
 }
 
 // UserRequest 用户接口请求结构块

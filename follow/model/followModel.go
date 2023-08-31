@@ -13,5 +13,5 @@ type Follow struct {
 
 // TableName 修改表名映射
 func (Follow) TableName() string {
-	return "follow"
+	return "follows"
 }

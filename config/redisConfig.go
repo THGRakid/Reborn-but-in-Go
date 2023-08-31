@@ -19,6 +19,7 @@ type RedisConfig struct {
 	} `json:"redis"`
 }
 
+// 全局变量，保存 Redis 服务器进程信息
 var redisProcess *os.Process
 
 // 启动 Redis 服务端
@@ -29,8 +30,19 @@ func startRedisServer() error {
 	if err != nil {
 		return fmt.Errorf("启动 Redis 服务器错误: %v", err)
 	}
-	redisProcess = cmd.Process
+	//redisProcess := cmd.Process
 	return nil
+}
+
+// 关闭 Redis 服务端
+func stopRedisServer() {
+	if redisProcess != nil {
+		// 发送停止信号给 Redis 服务器
+		err := redisProcess.Signal(os.Interrupt)
+		if err != nil {
+			fmt.Println("停止 Redis 服务器错误:", err)
+		}
+	}
 }
 
 // 检查服务端是否开启
@@ -50,7 +62,7 @@ func InitRedisServer() {
 		fmt.Println(startErr)
 		return
 	}
-	fmt.Println("Redis 客户端初始化成功")
+	fmt.Println("Redis 服务端初始化成功")
 	return
 }
 

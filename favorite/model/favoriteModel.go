@@ -12,5 +12,5 @@ type Favorite struct {
 
 // TableName 修改表名映射
 func (Favorite) TableName() string {
-	return "favorite"
+	return "favorites"
 }
