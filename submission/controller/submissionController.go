@@ -22,9 +22,10 @@ func NewSubmissionController(videoService *service.SubmissionService) *Submissio
 }
 
 // 1、处理 视频投稿 的请求
-func (c *SubmissionController) CreateVideo(ctx *gin.Context) {
+func (c *SubmissionController) Publish(ctx *gin.Context) {
 	//验证Token
 	isAuthenticated, _ := ctx.Get("is_authenticated")
+	fmt.Println("验证token获得的信息：", isAuthenticated)
 	if isAuthenticated.(bool) {
 		// token 验证通过，可以继续处理
 
@@ -39,19 +40,30 @@ func (c *SubmissionController) CreateVideo(ctx *gin.Context) {
 			return
 		}
 		//获取请求参数
-		data := []byte(ctx.Query("data"))
-		title := ctx.Query("title")
-
+		//data := []byte(ctx.Query("data"))
+		//fmt.Println("Query获取到的数据：", data)
+		//从前端接收请求参数
+		data, err := ctx.FormFile("data")
+		title := ctx.PostForm("title")
+		if err != nil {
+			ctx.JSON(http.StatusOK, gin.H{"status_code": 1, "status_msg": err.Error()})
+			return
+		}
 		//进行用户鉴权
 
 		//调用服务层
-		err := c.SubmissionService.CreateVideo(userId, data, title)
-		if err != nil {
+
+		if err := c.SubmissionService.CreateVideo(userId, title, data, ctx); err != nil {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"status_code": 1, "status_msg": "Failed to submit video"})
 			return
 		}
+
 		//操作成功
+
+		//videoPath, err := c.SubmissionService.CreateVideo(userId, title, data)
+		//c.SubmissionService.CreateVideo(userId, title, data, ctx)
 		ctx.JSON(http.StatusOK, gin.H{"status_code": 0, "status_msg": "Submit video successfully"})
+
 	} else {
 		// token 验证未通过，返回登录页面
 		ctx.JSON(http.StatusOK, &model.UserResponse{
