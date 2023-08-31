@@ -129,10 +129,10 @@ func (controller *feedController) Feed(c *gin.Context) {
 			//查询是否点赞过
 			tokenStruct, ok := middleware.CheckToken(strToken)
 			if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-				uid := tokenStruct.UserId                                         //用户id
-				vid := v.Id                                                       // 视频id
-				isFavorite, _ := controller.FavoriteService.IsFavourite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
-				if isFavorite {                                                   //有点赞记录
+				uid := tokenStruct.UserId                                        //用户id
+				vid := v.Id                                                      // 视频id
+				isFavorite, _ := controller.FavoriteService.IsFavorite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
+				if isFavorite {                                                  //有点赞记录
 					tmp.IsFavorite = true
 				}
 			}
