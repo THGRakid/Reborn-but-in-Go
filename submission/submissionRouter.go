@@ -9,13 +9,13 @@ import (
 
 func InitSubmissionRouter(r *gin.Engine) {
 	//创建数据访问层（DAO）的单例实例
-	submissionDao := dao.NewVideoDaoInstance()
+	submissionDao := dao.NewSubmissionDaoInstance()
 
 	//创建服务层（Service）的实例，传递数据访问层实例
-	submissionService := service.NewVideoService(submissionDao)
+	submissionService := service.NewSubmissionService(submissionDao)
 
 	//创建表现层（controller）的实例，传递服务层实例
-	submissionController := controller.NewVideoController(submissionService)
+	submissionController := controller.NewSubmissionController(submissionService)
 
 	//注册POST路由，登录用户选择视频上传，使用表现层的------函数。
 	r.POST("/douyin/publish/action/", submissionController.CreateVideo)

@@ -62,6 +62,15 @@ func AuthMiddleware() gin.HandlerFunc {
 			return []byte("Reborn_but_in_Go"), nil
 		})
 		if err == nil && parsedToken.Valid {
+			// 从令牌的声明中提取用户ID
+			if claims, ok := parsedToken.Claims.(jwt.MapClaims); ok {
+				if userIdFloat64, ok := claims["user_id"].(float64); ok {
+					// 将 float64 类型的 userId 转换为 int
+					userId := int(userIdFloat64)
+					// 将 userID 存储到上下文中，以便后续处理使用
+					c.Set("user_id", userId)
+				}
+			}
 			// token 验证通过，继续处理请求
 			c.Set("is_authenticated", true)
 			return

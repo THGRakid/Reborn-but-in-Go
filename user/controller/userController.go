@@ -73,7 +73,7 @@ func (c *UserController) GetUserByID(ctx *gin.Context) {
 	} else {
 		// token 验证未通过，返回登录页面
 		ctx.JSON(http.StatusOK, &model.UserResponse{
-			Response: model.Response{StatusCode: 1, StatusMsg: "User doesn't exist"},
+			Response: model.Response{StatusCode: 1, StatusMsg: "Token验证失败"},
 		})
 	}
 

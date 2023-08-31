@@ -7,30 +7,27 @@ import (
 	"time"
 )
 
-// VideoService 服务层
+// SubmissionService 服务层
 
-type VideoService struct {
-	VideoDao *dao.VideoDao
+type SubmissionService struct {
+	SubmissionDao *dao.SubmissionDao
 }
 
-// NewVideoService 创建一个新的VideoService实例
-func NewVideoService(videoDao *dao.VideoDao) *VideoService {
-	return &VideoService{
-		VideoDao: videoDao,
+// NewSubmissionService 创建一个新的SubmissionService实例
+func NewSubmissionService(submissionDao *dao.SubmissionDao) *SubmissionService {
+	return &SubmissionService{
+		SubmissionDao: submissionDao,
 	}
 }
-
-// 假定一个UserId，应该从user方法获取
-var UserId int64 = 123
 
 // 假定视频地址和封面地址，如何获取呢？
 var VideoPath string = ""
 var CoverPath string = ""
 
 // 1、投稿视频 ？？？data怎么处理？？？
-func (s *VideoService) CreateVideo(data []byte, title string) error {
+func (s *SubmissionService) CreateVideo(userId int64, data []byte, title string) error {
 	video := &model.Video{
-		UserId:        UserId,
+		UserId:        userId,
 		VideoPath:     VideoPath,
 		CoverPath:     CoverPath,
 		FavoriteCount: 0,
@@ -41,7 +38,7 @@ func (s *VideoService) CreateVideo(data []byte, title string) error {
 	}
 
 	//调用 DAO 的CreateVideo 方法来保存消息到数据库
-	err := s.VideoDao.CreateVideo(video)
+	err := s.SubmissionDao.CreateVideo(video)
 	if err != nil {
 		return err
 	}
@@ -49,9 +46,9 @@ func (s *VideoService) CreateVideo(data []byte, title string) error {
 }
 
 // 2、获取视频列表 根据用户ID获取视频列表
-func (s *VideoService) QueryVideoList(userId int64) (*model.ListResponse, error) {
+func (s *SubmissionService) QueryVideoList(userId int64) (*model.ListResponse, error) {
 	//调用 VideoDao 的 QueryVideoList 方法获取视频状态码，0-成功，其他值-失败列表
-	videoList, err := s.VideoDao.QueryVideoList(userId)
+	videoList, err := s.SubmissionDao.QueryVideoList(userId)
 
 	if err != nil {
 		fmt.Println("Service:Failed to get video list")
