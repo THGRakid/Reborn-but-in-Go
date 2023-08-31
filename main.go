@@ -3,6 +3,7 @@ package main
 import (
 	"Reborn-but-in-Go/comment"
 	"Reborn-but-in-Go/config"
+	"Reborn-but-in-Go/favorite"
 	"Reborn-but-in-Go/follow"
 	"Reborn-but-in-Go/message"
 	"Reborn-but-in-Go/submission"
@@ -32,7 +33,7 @@ func main() {
 	submission.InitSubmissionRouter(r)
 	user.InitUserRouter(r)
 
-	//	favorite.InitFavoriteRouter(r)
+	favorite.InitFavoriteRouter(r)
 	comment.InitCommentRouter(r)
 	message.InitMessageRouter(r)
 	follow.InitFollowRouter(r)
