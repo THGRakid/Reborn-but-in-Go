@@ -19,13 +19,6 @@ type feedController struct {
 	UserDao         *userDao.UserDao
 }
 
-//——————————————中间件——————————————
-
-var userId int64 = 666
-var userName = "GGBond"
-
-// ——————————————中间件——————————————
-
 // NewFeedController 创建一个新的 FeedController 实例
 func NewFeedController(videoService *service.VideoService) *feedController {
 	return &feedController{
@@ -39,14 +32,14 @@ type Response struct {
 }
 
 type FeedVideo struct {
-	Id            int64    `json:"id,omitempty"`
-	Author        FeedUser `json:"author,omitempty"`
-	VideoPath     string   `json:"video_path,omitempty"`
-	CoverPath     string   `json:"cover_path,omitempty"`
-	FavoriteCount int64    `json:"favorite_count,omitempty"`
-	CommentCount  int64    `json:"comment_count,omitempty"`
-	IsFavorite    bool     `json:"is_favorite,omitempty"`
-	Title         string   `json:"title,omitempty"`
+	Id            int64    `json:"id"`
+	Author        FeedUser `json:"author"`
+	VideoPath     string   `json:"video_path"`
+	CoverPath     string   `json:"cover_path"`
+	FavoriteCount int64    `json:"favorite_count"`
+	CommentCount  int64    `json:"comment_count"`
+	IsFavorite    bool     `json:"is_favorite"`
+	Title         string   `json:"title"`
 }
 type FeedResponse struct {
 	Response
@@ -58,13 +51,17 @@ type FeedNoVideoResponse struct {
 	NextTime int64 `json:"next_time"`
 }
 type FeedUser struct {
-	Id             int64  `json:"id,omitempty"`
-	Name           string `json:"name,omitempty"`
-	Follow         int64  `json:"follow_count,omitempty"`
-	Follower       int64  `json:"follower_count,omitempty"`
-	IsFollow       bool   `json:"is_follow,omitempty"`
-	FavoritedCount int64  `json:"favorited_count"`
-	FavoriteCount  int64  `json:"favorite_count"`
+	Id              int64  `json:"id,omitempty"`
+	Name            string `json:"name,omitempty"`
+	Follow          int64  `json:"follow_count"`
+	Follower        int64  `json:"follower_count"`
+	IsFollow        bool   `json:"is_follow"`
+	Avatar          string `json:"avatar"`
+	BackgroundImage string `json:"background_image"`
+	Signature       string `json:"signature"`
+	TotalFavorited  int64  `json:"total_favorited"`
+	WorkCount       int64  `json:"work_count"`
+	FavoriteCount   int64  `json:"favorite_count"`
 }
 
 func (controller *feedController) Feed(c *gin.Context) {
@@ -95,16 +92,19 @@ func (controller *feedController) Feed(c *gin.Context) {
 		var tmp FeedVideo
 		tmp.Id = v.Id
 		tmp.VideoPath = v.VideoPath
-		//tmp.Author = //依靠用户信息接口查询
+		//tmp.Author依靠用户信息接口查询
 		var user, err = controller.UserDao.GetUserByID(v.UserId)
 		var feedUser FeedUser
 		if err == nil { //用户存在
 			feedUser.Id = user.Id
+			feedUser.Name = user.Name
 			feedUser.Follower = user.Follower
 			feedUser.Follow = user.Following
-			feedUser.Name = user.Name
-			//add
-			feedUser.FavoritedCount = user.FavoritedCount
+			feedUser.Avatar = user.Avatar
+			feedUser.BackgroundImage = user.Background
+			feedUser.Signature = user.Introduce
+			feedUser.WorkCount = user.WorkCount
+			feedUser.TotalFavorited = user.FavoritedCount
 			feedUser.FavoriteCount = user.FavoriteCount
 			feedUser.IsFollow = false
 			if haveToken {
