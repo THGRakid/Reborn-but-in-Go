@@ -3,6 +3,7 @@ package service
 import (
 	"Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/user/model"
+	"fmt"
 )
 
 // UserService 服务层
@@ -69,9 +70,23 @@ func (s *UserService) UserLogin(username string, password string) (*model.LoginR
 func (s *UserService) GetUserByID(userId int64) (*model.UserResponse, error) {
 	user, _ := s.UserDao.GetUserByID(userId)
 
+	userForUsed := &model.UserForUsed{
+		Id:              user.Id,
+		Name:            user.Name,
+		FollowCount:     user.Following,
+		FollowerCount:   user.Follower,
+		IsFollow:        false, //默认未关注
+		Avatar:          user.Avatar,
+		BackgroundImage: user.Background,
+		Signature:       user.Introduce,
+		TotalFavorited:  user.FavoritedCount,
+		WorkCount:       user.WorkCount,
+		FavoriteCount:   user.FavoriteCount,
+	}
 	userResponse := &model.UserResponse{
 		Response: model.Response{StatusCode: 0},
-		User:     user,
+		User:     userForUsed,
 	}
+	fmt.Println(userForUsed)
 	return userResponse, nil
 }

@@ -21,6 +21,20 @@ type User struct {
 	Status         int8      `gorm:"default:0"` //用户状态（在线为1，不在线为0）
 }
 
+type UserForUsed struct {
+	Id              int64  //用户id
+	Name            string //用户名称（不重复）
+	FollowCount     int64  //关注人数
+	FollowerCount   int64  //粉丝人数
+	IsFollow        bool   // true-已关注，false-未关注
+	Avatar          string //用户头像
+	BackgroundImage string //背景图像
+	Signature       string //个人简介
+	TotalFavorited  int64  //获赞数
+	WorkCount       int64  //作品数
+	FavoriteCount   int64  //点赞数
+}
+
 // TableName 修改表名映射
 func (User) TableName() string {
 	return "users"
@@ -48,7 +62,7 @@ type LoginResponse struct {
 // UserResponse  用户接口响应结构快
 type UserResponse struct {
 	Response
-	User *User `json:"user"` //用户对象
+	User *UserForUsed `json:"user"` //用户对象
 }
 
 // Token验证实例

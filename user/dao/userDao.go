@@ -154,22 +154,3 @@ func (dao *UserDao) GetUserByID(id int64) (*model.User, error) {
 	}
 	return &user, nil
 }
-
-/*
-已废弃
-方法四：获取个人关注列表
-根据用户ID查看用户信息
-参数：userID int64  用户名
-返回类型：*model.User （查询到的用户），error
-
-func GetFollowing(userID int64) ([]int64, error) {
-	var user model.User
-	result := config.DB.First(&user, userID)
-	if result.Error != nil {
-		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return nil, errors.New("用户不存在")
-		}
-		return nil, result.Error
-	}
-	return
-}*/
