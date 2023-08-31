@@ -18,7 +18,7 @@ func InitSubmissionRouter(r *gin.Engine) {
 	submissionController := controller.NewSubmissionController(submissionService)
 
 	//注册POST路由，登录用户选择视频上传，使用表现层的------函数。
-	r.POST("/douyin/publish/action/", submissionController.CreateVideo)
+	r.POST("/douyin/publish/action/", submissionController.Publish)
 
 	//注册GET路由，登录用户的视频发布列表，直接列出用户所有投稿过的视频。使用表现层的-----函数。
 	r.GET("/douyin/publish/list/", submissionController.QueryVideoList)
