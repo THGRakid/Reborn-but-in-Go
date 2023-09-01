@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log"
 	"sync"
+	"time"
 )
 
 // FavoriteDao 把dao层看成整体，把dao的curd封装在一个结构体中。
@@ -45,6 +46,19 @@ func (*FavoriteDao) GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 	return FavoriteUserIdList, nil
 }
 
+// 好像没用到
+// InsertFavorite 插入点赞数据
+func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
+	// 创建点赞数据，默认为点赞，status为1
+	FavoriteData.Status = 1
+	err := config.DB.Model(model.Favorite{}).Create(&FavoriteData).Error
+	if err != nil {
+		log.Println(err.Error())
+		return errors.New("insert data fail")
+	}
+	return nil
+}
+
 // UpdateFavorite 根据userId，videoId,actionType点赞或者取消赞
 func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8) error {
 	// 更新当前用户观看视频的点赞状态
@@ -56,16 +70,36 @@ func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8)
 	}
 	return nil
 }
-
-// InsertFavorite 插入点赞数据
-func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
-	// 创建点赞数据，默认为点赞，status为1
-	FavoriteData.Status = 1
-	err := config.DB.Model(model.Favorite{}).Create(&FavoriteData).Error
+func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionType int8) error {
+	// 查询是否已存在该用户对该视频的点赞记录
+	existingFavorite, err := favoriteDao.GetFavoriteInfo(userId, videoId)
 	if err != nil {
 		log.Println(err.Error())
-		return errors.New("insert data fail")
+		return err
 	}
+
+	if existingFavorite.UserId == 0 {
+		// 如果记录不存在，插入点赞数据
+		newFavorite := model.Favorite{
+			UserId:   userId,
+			VideoId:  videoId,
+			Status:   1, // 默认点赞状态为1
+			CreateAt: time.Now(),
+		}
+		err := favoriteDao.InsertFavorite(newFavorite)
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
+	} else {
+		// 如果记录存在，更新点赞状态
+		err := favoriteDao.UpdateFavorite(userId, videoId, actionType)
+		if err != nil {
+			log.Println(err.Error())
+			return err
+		}
+	}
+
 	return nil
 }
 

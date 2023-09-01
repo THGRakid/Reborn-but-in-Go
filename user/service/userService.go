@@ -21,20 +21,24 @@ func NewUserService(userDao *dao.UserDao) *UserService {
 // CreateUser 根据用户名和登录密码注册用户id及token
 func (s *UserService) CreateUser(username string, password string) (*model.LoginResponse, error) {
 
-	// 调用 UserDao 的 UserLogin方法获取用户id及token
-	user, token, _ := s.UserDao.CreateUser(username, password)
-
-	checkInfo, _ := s.UserDao.CheckUser(username)
+	//未重复用户才能创建
+	checkInfo, err := s.UserDao.CheckUser(username)
 	if checkInfo == 1 {
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 2, StatusMsg: "用户已存在，请更改用户名"},
 		}, nil
-	} else {
+	} else if checkInfo == 0 {
+		// 调用 UserDao 的 UserLogin方法获取用户id及token
+		userId, token, _ := s.UserDao.CreateUser(username, password)
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 0},
-			UserId:   user.Id,
+			UserId:   userId,
 			Token:    token,
 		}, nil
+	} else {
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 3, StatusMsg: "创建失败"},
+		}, err
 	}
 
 }

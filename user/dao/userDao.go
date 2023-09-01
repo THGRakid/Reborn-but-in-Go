@@ -45,7 +45,7 @@ func NewUserDaoInstance() *UserDao {
 参数：username string用户名, password string密码
 返回值：id int 用户id，token string 令牌，error错误
 */
-func (dao *UserDao) CreateUser(username string, password string) (model.User, string, error) {
+func (dao *UserDao) CreateUser(username string, password string) (int64, string, error) {
 	// 新建user类
 	var user model.User
 
@@ -60,7 +60,7 @@ func (dao *UserDao) CreateUser(username string, password string) (model.User, st
 	token, _ := generateAuthToken(user.Id)
 
 	// 创建成功后返回 user类型 和权限token
-	return user, token, nil
+	return user.Id, token, nil
 }
 
 // 生成权限token
