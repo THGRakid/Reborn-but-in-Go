@@ -46,8 +46,8 @@ type FollowersResp struct {
 
 // RelationAction 处理关注和取消关注请求。
 func (f *FollowController) RelationAction(c *gin.Context) {
-	middleware.AuthMiddleware()(c)
 	// 验证Token
+	middleware.AuthMiddleware()(c)
 	isAuthenticated, _ := c.Get("is_authenticated")
 	fmt.Println("验证 token 获得的信息：", isAuthenticated)
 	// token 验证失败
@@ -68,7 +68,7 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 	toUserId, err2 := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
 	actionType, err3 := strconv.ParseInt(c.Query("action_type"), 10, 64)
 
-	fmt.Println(userId, toUserId, actionType)
+	//fmt.Println(userId, toUserId, actionType)
 
 	// 传入参数格式有问题。
 	if nil != err2 || nil != err3 || actionType < 1 || actionType > 2 {
