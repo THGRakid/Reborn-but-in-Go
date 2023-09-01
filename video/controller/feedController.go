@@ -6,6 +6,7 @@ import (
 	"Reborn-but-in-Go/middleware"
 	userDao "Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/video/service"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -34,8 +35,8 @@ type Response struct {
 type FeedVideo struct {
 	Id            int64    `json:"id"`
 	Author        FeedUser `json:"author"`
-	VideoPath     string   `json:"video_path"`
-	CoverPath     string   `json:"cover_path"`
+	VideoPath     string   `json:"play_url"`
+	CoverPath     string   `json:"cover_url"`
 	FavoriteCount int64    `json:"favorite_count"`
 	CommentCount  int64    `json:"comment_count"`
 	IsFavorite    bool     `json:"is_favorite"`
@@ -142,6 +143,7 @@ func (controller *feedController) Feed(c *gin.Context) {
 		newTime = v.CreateAt.Unix()
 	}
 	if len(feedVideoList) > 0 {
+		fmt.Println(feedVideoList)
 		c.JSON(http.StatusOK, FeedResponse{
 			Response:  Response{StatusCode: 0}, //成功
 			VideoList: feedVideoList,
