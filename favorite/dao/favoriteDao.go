@@ -46,7 +46,6 @@ func (*FavoriteDao) GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 	return FavoriteUserIdList, nil
 }
 
-// 好像没用到
 // InsertFavorite 插入点赞数据
 func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 	// 创建点赞数据，默认为点赞，status为1
@@ -77,8 +76,7 @@ func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionTy
 		log.Println(err.Error())
 		return err
 	}
-
-	if existingFavorite.UserId == 0 {
+	if existingFavorite.UserId != userId {
 		// 如果记录不存在，插入点赞数据
 		newFavorite := model.Favorite{
 			UserId:   userId,
@@ -92,7 +90,8 @@ func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionTy
 			return err
 		}
 	} else {
-		// 如果记录存在，更新点赞状态
+		// 如果记录存在，只修改 status 为 actionType
+		existingFavorite.Status = actionType
 		err := favoriteDao.UpdateFavorite(userId, videoId, actionType)
 		if err != nil {
 			log.Println(err.Error())

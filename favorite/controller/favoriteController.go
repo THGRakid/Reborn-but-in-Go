@@ -43,11 +43,17 @@ func (f *FavoriteController) FavoriteAction(c *gin.Context) {
 	Favorite := new(service.FavoriteService)
 	//获取点赞或者取消赞操作的错误信息
 	err := Favorite.FavoriteAction(userId, videoId, int8(actionType))
-	if err == nil {
+	if err == nil && actionType == 1 {
 		log.Printf("点赞成功")
 		c.JSON(http.StatusOK, FavoriteResponse{
 			StatusCode: 0,
 			StatusMsg:  "favorite action success",
+		})
+	} else if err == nil && actionType == 2 {
+		log.Printf("取消赞成功")
+		c.JSON(http.StatusOK, FavoriteResponse{
+			StatusCode: 0,
+			StatusMsg:  "remove favorite action success",
 		})
 	} else {
 		log.Printf("点赞失败：%v", err)

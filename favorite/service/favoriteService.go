@@ -97,7 +97,7 @@ func (fs *FavoriteService) GetTotalFavoriteVideoCount(userId int64) (int64, erro
 // FavoriteAction 点赞状态改变
 func (fs *FavoriteService) FavoriteAction(userId int64, videoId int64, actionType int8) error {
 	// 维护数据库信息
-	err := fs.FavoriteDao.UpdateFavorite(userId, videoId, actionType)
+	err := fs.FavoriteDao.UpdateOrInsertFavorite(userId, videoId, actionType)
 	if err != nil {
 		return err
 	}
