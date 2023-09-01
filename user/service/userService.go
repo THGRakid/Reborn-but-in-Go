@@ -24,11 +24,11 @@ func (s *UserService) CreateUser(username string, password string) (*model.Login
 	// 调用 UserDao 的 UserLogin方法获取用户id及token
 	user, token, _ := s.UserDao.CreateUser(username, password)
 
-	checkInfo, err := s.UserDao.CheckUser(username)
+	checkInfo, _ := s.UserDao.CheckUser(username)
 	if checkInfo == 1 {
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 2, StatusMsg: "用户已存在，请更改用户名"},
-		}, err
+		}, nil
 	} else {
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 0},
@@ -54,7 +54,7 @@ func (s *UserService) UserLogin(username string, password string) (*model.LoginR
 	if checkInfo == 1 {
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 2, StatusMsg: "用户不存在"},
-		}, err
+		}, nil
 	} else if checkInfo == 2 {
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 3, StatusMsg: "登录错误"},
@@ -62,7 +62,7 @@ func (s *UserService) UserLogin(username string, password string) (*model.LoginR
 	} else if checkInfo == 3 {
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 2, StatusMsg: "密码错误"},
-		}, err
+		}, nil
 	} else if checkInfo == 0 {
 		// 构建 UserResponse 对象，将查询到的消息记录填充进去
 		loginResponse := &model.LoginResponse{

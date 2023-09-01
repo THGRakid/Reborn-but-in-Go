@@ -156,7 +156,7 @@ func (dao *UserDao) CheckUser(username string) (int64, error) {
 	existingUser := &model.User{}
 	result := config.DB.Model(&model.User{}).Where("name = ?", username).First(existingUser)
 	if result.Error == nil {
-		return 1, errors.New("用户名已存在")
+		return 1, nil
 	} else {
 		return 0, nil
 	}
