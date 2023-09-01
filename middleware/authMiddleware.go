@@ -9,6 +9,7 @@ AuthMiddleware中间件
 
 */
 import (
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -55,7 +56,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// 提取 token
 		token := c.Query("token")
-
+		fmt.Println("收到Token", token, "正在进行解析")
 		// 解析 token
 		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 			// 验证签名密钥
@@ -73,11 +74,13 @@ func AuthMiddleware() gin.HandlerFunc {
 			}
 			// token 验证通过，继续处理请求
 			c.Set("is_authenticated", true)
+			fmt.Println("token 验证通过")
 			return
 		}
 
 		// 验证失败，返回未授权错误
 		c.Set("is_authenticated", false)
+		fmt.Println("token 验证失败")
 		return
 	}
 }

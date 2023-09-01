@@ -21,12 +21,6 @@ func (User) TableName() string {
 	return "users"
 }
 
-// UserRequest 用户接口请求结构块
-type UserRequest struct {
-	Username string //注册用户名，最长32个字符
-	Password string //密码，最长32个字符
-}
-
 // Response 用户响应状态码
 type Response struct {
 	StatusCode int32  `json:"status_code"`          // 状态码，0-成功，其他值-失败
