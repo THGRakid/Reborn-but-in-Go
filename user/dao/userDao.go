@@ -107,7 +107,7 @@ func (dao *UserDao) UserLogin(username, password string) (int64, string, int64, 
 	result := config.DB.Table("users").Select("id, password").Where("name = ?", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return 0, "", 1, errors.New("用户不存在")
+			return 0, "", 1, nil
 		} else {
 			return 0, "", 2, result.Error
 		}
@@ -121,7 +121,7 @@ func (dao *UserDao) UserLogin(username, password string) (int64, string, int64, 
 		return user.Id, token, 0, nil
 	} else {
 		// 密码不正确，返回错误
-		return 0, "", 3, errors.New("密码不正确")
+		return 0, "", 3, nil
 	}
 }
 
