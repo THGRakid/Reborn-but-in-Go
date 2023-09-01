@@ -98,13 +98,13 @@ func (controller *feedController) Feed(c *gin.Context) {
 		if err == nil { //用户存在
 			feedUser.Id = user.Id
 			feedUser.Name = user.Name
-			feedUser.Follower = user.Follower
-			feedUser.Follow = user.Following
+			feedUser.Follower = user.FollowerCount
+			feedUser.Follow = user.FollowCount
 			feedUser.Avatar = user.Avatar
-			feedUser.BackgroundImage = user.Background
-			feedUser.Signature = user.Introduce
+			feedUser.BackgroundImage = user.BackgroundImage
+			feedUser.Signature = user.Signature
 			feedUser.WorkCount = user.WorkCount
-			feedUser.TotalFavorited = user.FavoritedCount
+			feedUser.TotalFavorited = user.TotalFavorited
 			feedUser.FavoriteCount = user.FavoriteCount
 			feedUser.IsFollow = false
 			if haveToken {
