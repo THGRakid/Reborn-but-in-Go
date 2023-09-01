@@ -4,12 +4,16 @@ import (
 	"Reborn-but-in-Go/submission/dao"
 	"Reborn-but-in-Go/submission/model"
 	"Reborn-but-in-Go/video/service"
+	"context"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/qiniu/go-sdk/v7/auth/qbox"
+	"github.com/qiniu/go-sdk/v7/storage"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -26,6 +30,41 @@ func NewSubmissionService(submissionDao *dao.SubmissionDao) *SubmissionService {
 	}
 }
 
+// UploadFileToServer 传入上下文，保存到服务器的地址，本地文件地址，文件名，保存文件到服务器并返回文件存储地址
+func UploadFileToServer(key, path, fileName string) (finalPath string, err error) {
+	accessKey := "LZPQ0Bx_xldazTQsnD1VYvnIe3aWSPhQsLGF9lML" //密钥
+	secretKey := "uVj2nC2fn2KlkROZppBNPXOz6zrJpEV_J99ehZto" //密钥
+	//localFile := "/Users/jemy/Documents/github.png"         //本地文件路径
+	bucket := "zmxs" //空间名称
+	//key := "/videos" //上传文件的访问路径
+	//生成上传凭证
+	putPolicy := storage.PutPolicy{
+		Scope: bucket,
+	}
+	mac := qbox.NewMac(accessKey, secretKey)
+	upToken := putPolicy.UploadToken(mac)
+	cfg := storage.Config{}
+	// 空间对应的机房
+	cfg.Region = &storage.ZoneHuanan
+	// 是否使用https域名
+	cfg.UseHTTPS = false
+	// 上传是否使用CDN上传加速
+	cfg.UseCdnDomains = false
+	// 构建表单上传的对象
+	formUploader := storage.NewFormUploader(&cfg)
+	ret := storage.PutRet{}
+	// 可选配置
+	putExtra := storage.PutExtra{
+		Params: map[string]string{
+			"fileName": "github logo",
+		},
+	}
+
+	err = formUploader.PutFile(context.Background(), &ret, upToken, key, path, &putExtra)
+
+	return "http://s0apnlizm.hn-bkt.clouddn.com/" + key + fileName, err
+}
+
 // 假定视频地址和封面地址，如何获取呢？
 //var VideoPath string = ""
 
@@ -35,15 +74,32 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 	videoName := filepath.Base(data.Filename)
 	//将userid和视频文件名进行拼接得到最终视频文件名
 	videoName = fmt.Sprintf("%d_%s", userId, videoName)
-	//将最终视频文件保存至本地
-	workPath, _ := os.Getwd()
-	videoPath := workPath + "/static/videos/" + videoName
+
+	//workPath, _ := os.Getwd()
+	//videoPath := workPath + "/static/videos/" + videoName
+	videoPath := filepath.Join("../videos/", videoName)
+	//将最终视频文件暂时保存至本地
 	if err := ctx.SaveUploadedFile(data, videoPath); err != nil {
-		ctx.JSON(http.StatusOK, gin.H{"status_code": 1, "status_msg": "Failed to save video to host"})
+		ctx.JSON(http.StatusOK, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to save video to host",
+		})
 		return err
 	}
-	//调用videoService的 GetCoverPath 函数，获取封面地址
-	CoverPath, err := service.GetCoverPath(videoPath, 1)
+
+	//开始上传视频到服务器
+	finalVideoPath, err := UploadFileToServer("/videos/", videoPath, videoName)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to upload video to server from submissionService",
+		})
+		return err
+	}
+	//fmt.Println(ret.Key, ret.Hash)
+
+	//调用videoService的 GetCoverPath 函数，获取封面地址,并暂时保存到了本地
+	coverPath, err := service.GetCoverPath(videoPath, 1)
 	//失败则无法投稿
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
@@ -52,11 +108,31 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 		})
 		return err
 	}
+	//开始上传封面到服务器
+	coverName := strings.Replace(videoName, ".mp4", ".png", 1)
+	finalCoverPath, err := UploadFileToServer("/covers/", coverPath, coverName)
+	if err != nil {
+		ctx.JSON(http.StatusOK, gin.H{
+			"status_code": 1,
+			"status_msg":  "Failed to get covers from videoService",
+		})
+		return err
+	}
+
+	//删除保存在本地中的文件
+	err = os.Remove(videoPath)
+	if err != nil {
+		panic(err)
+	}
+	err = os.Remove(coverPath)
+	if err != nil {
+		panic(err)
+	}
 	//需要处理视频数据data，得到视频地址
 	video := &model.Video{
 		UserId:        userId,
-		VideoPath:     videoPath,
-		CoverPath:     CoverPath,
+		VideoPath:     finalVideoPath,
+		CoverPath:     finalCoverPath,
 		FavoriteCount: 0,
 		CommentCount:  0,
 		Title:         title,
