@@ -3,6 +3,8 @@ package dao
 import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/follow/model"
+	"fmt"
+	"gorm.io/gorm"
 	"log"
 	"sync"
 	"time"
@@ -30,34 +32,74 @@ func NewFollowDaoInstance() *FollowDao {
 
 // InsertFollowRelation 给定用户和关注对象id，建立其关系
 func (*FollowDao) InsertFollowRelation(userId int64, targetId int64) (bool, error) {
-	// 生成需要插入的关系结构体。
-	date := time.Now()
-	follow := model.Follow{
-		UserId:     userId,
-		FollowerId: targetId,
-		CreateAt:   date,
+
+	fmt.Printf("查询条件：user_id=%d, follower_id=%d\n", userId, targetId)
+
+	currentTime := time.Now()
+
+	var existingFollow model.Follow
+
+	// 尝试查询是否已经存在关注信息
+	if err := config.DB.Where("user_id = ? AND follower_id = ?", userId, targetId).
+		First(&existingFollow).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			// 如果记录不存在，插入新的关注信息
+			newFollow := model.Follow{
+				UserId:     userId,
+				FollowerId: targetId,
+				CreateAt:   currentTime,
+				Status:     0,
+			}
+			config.DB.Create(&newFollow)
+			log.Println("首次关注成功")
+			return true, nil
+		} else {
+			// 处理其他查询错误
+			fmt.Println("查询关注信息时发生错误:", err)
+			return false, err
+		}
+	} else {
+		// 如果存在关注信息，更新状态和时间
+		if existingFollow.Status == 1 {
+			existingFollow.Status = 0
+		}
+		existingFollow.CreateAt = currentTime
+		config.DB.Save(&existingFollow)
+		log.Println("重新关注成功")
+		return true, nil
 	}
-	// 插入失败，返回err.
-	if err := config.DB.Select("UserId", "FollowerId", "CreateAt").Create(&follow).Error; nil != err {
-		log.Println(err.Error())
-		return false, err
-	}
-	// 插入成功
-	return true, nil
 }
 
 // DeleteFollowRelation 给定用户和取消关注对象id，取消其关系
 func (*FollowDao) DeleteFollowRelation(userId int64, targetId int64) (bool, error) {
-	// 更新失败，返回错误。
-	if err := config.DB.Model(&model.Follow{}).
-		Where("user_id = ? AND follower_id = ? AND status = ?", userId, targetId, 0).
-		Update("status", 1).Error; nil != err {
-		// 更新失败，打印错误日志。
-		log.Println(err.Error())
-		return false, err
+	// 定义要更新的数据
+	updateData := map[string]interface{}{
+		"Status":   1,          // 更新状态为1
+		"CreateAt": time.Now(), // 更新创建时间为当前时间
 	}
-	// 更新成功。
-	return true, nil
+	result := config.DB.Model(&model.Follow{}).
+		Where("user_id = ? AND follower_id = ?", userId, targetId).
+		Updates(updateData)
+
+	if result.Error != nil {
+		// 更新失败
+		log.Println("取关失败")
+		return false, nil
+	} else {
+		// 更新成功
+		log.Println("取关成功")
+		return true, nil
+	}
+	//// 更新失败，返回错误。
+	//if err := config.DB.Model(&model.Follow{}).
+	//	Where("user_id = ? AND follower_id = ?", userId, targetId).
+	//	Update(updateData).Error; nil != err {
+	//	// 更新失败，打印错误日志。
+	//	log.Println(err.Error())
+	//	return false, err
+	//}
+	//// 更新成功。
+	//return true, nil
 }
 
 // FindRelation 给定当前用户和目标用户id，查询follow表中相应的记录。
