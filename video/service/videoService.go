@@ -76,7 +76,7 @@ func GetCoverPath(videoPath string, frameNum int) (coverPath string, err error) 
 		log.Fatal("生成缩略图失败3：", err)
 		return "", err
 	}
-	//返回相对路径
-	coverPath = coverPath[len(workPath):] + ".png"
-	return coverPath, nil
+	//返回绝对路径
+	//coverPath = coverPath[len(workPath):] + ".png"
+	return coverPath, err
 }
