@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"Reborn-but-in-Go/middleware"
 	"Reborn-but-in-Go/submission/service"
 	"Reborn-but-in-Go/user/model"
 	"fmt"
@@ -23,6 +24,7 @@ func NewSubmissionController(videoService *service.SubmissionService) *Submissio
 
 // 1、处理 视频投稿 的请求
 func (c *SubmissionController) Publish(ctx *gin.Context) {
+	middleware.AuthMiddleware()(ctx)
 	//验证Token
 	isAuthenticated, _ := ctx.Get("is_authenticated")
 	fmt.Println("验证token获得的信息：", isAuthenticated)

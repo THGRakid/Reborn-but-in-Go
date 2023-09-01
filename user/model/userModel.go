@@ -45,8 +45,3 @@ type UserResponse struct {
 	Response
 	User *User `json:"user"` //用户对象
 }
-
-// Token验证实例
-var TokenInfo = map[string]User{
-	"Token": {},
-}

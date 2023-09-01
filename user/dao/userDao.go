@@ -48,14 +48,6 @@ func NewUserDaoInstance() *UserDao {
 func (dao *UserDao) CreateUser(username string, password string) (model.User, string, error) {
 	// 新建user类
 	var user model.User
-	/*
-		// 检查用户名是否已存在
-		existingUser := &model.User{}
-		result := config.DB.Model(&model.User{}).Where("name = ?", username).First(existingUser)
-		if result.Error == nil {
-			return 0, "", errors.New("用户名已存在")
-		}
-	*/
 
 	//设置用户基本信息
 	user.Name = username
@@ -106,29 +98,31 @@ func generateAuthToken(userId int64) (string, error) {
 用户登录函数
 参数：username string   用户名
 参数：password string   密码
-返回类型：userId，token, error
+返回类型：userId int64，token string, checkInfo int64, error
 */
-func (dao *UserDao) UserLogin(username, password string) (int64, string, error) {
+func (dao *UserDao) UserLogin(username, password string) (int64, string, int64, error) {
 	// 根据用户名查询用户信息
 	var user model.User
 
 	result := config.DB.Table("users").Select("id, password").Where("name = ?", username).First(&user)
 	if result.Error != nil {
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-			return 0, "", errors.New("用户不存在")
+			return 0, "", 1, errors.New("用户不存在")
+		} else {
+			return 0, "", 2, result.Error
 		}
-		return 0, "", result.Error
+
 	}
 
 	// 比较密码
 	if user.Password == password {
 		// 密码正确，返回用户ID
 		token, _ := generateAuthToken(user.Id)
-		return user.Id, token, nil
+		return user.Id, token, 0, nil
+	} else {
+		// 密码不正确，返回错误
+		return 0, "", 3, errors.New("密码不正确")
 	}
-
-	// 密码不正确，返回错误
-	return 0, "", errors.New("密码不正确")
 }
 
 /*
@@ -149,4 +143,21 @@ func (dao *UserDao) GetUserByID(id int64) (*model.User, error) {
 		return nil, result.Error
 	}
 	return &user, nil
+}
+
+/*
+方法四：
+检查用户是否能创建
+参数：username string用户名, password string密码
+返回值：id int 用户id，token string 令牌，error错误
+*/
+func (dao *UserDao) CheckUser(username string) (int64, error) {
+	// 检查用户名是否已存在
+	existingUser := &model.User{}
+	result := config.DB.Model(&model.User{}).Where("name = ?", username).First(existingUser)
+	if result.Error == nil {
+		return 1, errors.New("用户名已存在")
+	} else {
+		return 0, nil
+	}
 }

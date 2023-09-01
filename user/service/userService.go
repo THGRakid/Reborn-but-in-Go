@@ -18,25 +18,18 @@ func NewUserService(userDao *dao.UserDao) *UserService {
 	}
 }
 
-type IdResponse struct {
-	StatusCode int32       // 状态码，0-成功，其他值-失败
-	StatusMsg  string      // 返回状态描述
-	User       *model.User //用户信息
-}
-
 // CreateUser 根据用户名和登录密码注册用户id及token
 func (s *UserService) CreateUser(username string, password string) (*model.LoginResponse, error) {
 
 	// 调用 UserDao 的 UserLogin方法获取用户id及token
 	user, token, _ := s.UserDao.CreateUser(username, password)
 
-	if _, exist := model.TokenInfo[token]; exist {
+	checkInfo, err := s.UserDao.CheckUser(username)
+	if checkInfo == 1 {
 		return &model.LoginResponse{
-			Response: model.Response{StatusCode: 1, StatusMsg: "用户已存在"},
-		}, nil
+			Response: model.Response{StatusCode: 2, StatusMsg: "用户已存在，请更改用户名"},
+		}, err
 	} else {
-		model.TokenInfo[token] = user
-
 		return &model.LoginResponse{
 			Response: model.Response{StatusCode: 0},
 			UserId:   user.Id,
@@ -50,19 +43,40 @@ func (s *UserService) CreateUser(username string, password string) (*model.Login
 func (s *UserService) UserLogin(username string, password string) (*model.LoginResponse, error) {
 
 	// 调用 UserDao 的 UserLogin 方法获取用户信息
-	userId, token, err := s.UserDao.UserLogin(username, password)
+	userId, token, checkInfo, err := s.UserDao.UserLogin(username, password)
 	if err != nil {
 		// 处理错误，例如返回错误信息
-		return nil, err
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 3, StatusMsg: "登录错误"},
+		}, err
 	}
 
-	// 构建 UserResponse 对象，将查询到的消息记录填充进去
-	loginResponse := &model.LoginResponse{
-		Response: model.Response{StatusCode: 0},
-		UserId:   userId,
-		Token:    token,
+	if checkInfo == 1 {
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 2, StatusMsg: "用户不存在"},
+		}, err
+	} else if checkInfo == 2 {
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 3, StatusMsg: "登录错误"},
+		}, err
+	} else if checkInfo == 3 {
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 2, StatusMsg: "密码错误"},
+		}, err
+	} else if checkInfo == 0 {
+		// 构建 UserResponse 对象，将查询到的消息记录填充进去
+		loginResponse := &model.LoginResponse{
+			Response: model.Response{StatusCode: 0},
+			UserId:   userId,
+			Token:    token,
+		}
+		return loginResponse, nil
+	} else {
+		return &model.LoginResponse{
+			Response: model.Response{StatusCode: 3, StatusMsg: "登录错误"},
+		}, err
 	}
-	return loginResponse, nil
+
 }
 
 // GetUserByID 根据用户ID和Token返回用户User列表

@@ -29,7 +29,7 @@ func (c *UserController) CreateUser(ctx *gin.Context) {
 
 	loginResponse, err := c.UserService.CreateUser(username, password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"StatusCode": 1, "StatusMsg": "用户已存在"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"StatusCode": 1, "StatusMsg": "注册失败"})
 		return
 	}
 
@@ -45,7 +45,7 @@ func (c *UserController) UserLogin(ctx *gin.Context) {
 
 	userResponse, err := c.UserService.UserLogin(username, password)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "登录失败"})
+		ctx.JSON(http.StatusInternalServerError, gin.H{"StatusCode": 1, "StatusMsg": "登录失败"})
 		return
 	}
 
