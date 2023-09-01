@@ -30,13 +30,12 @@ func NewSubmissionService(submissionDao *dao.SubmissionDao) *SubmissionService {
 	}
 }
 
-// UploadFileToServer 传入上下文，保存到服务器的地址，本地文件地址，文件名，保存文件到服务器并返回文件存储地址
+// UploadFileToServer 传入保存到服务器上的地址，本地文件地址，文件名，保存文件到服务器并返回文件存储地址
 func UploadFileToServer(key, path, fileName string) (finalPath string, err error) {
 	accessKey := "LZPQ0Bx_xldazTQsnD1VYvnIe3aWSPhQsLGF9lML" //密钥
 	secretKey := "uVj2nC2fn2KlkROZppBNPXOz6zrJpEV_J99ehZto" //密钥
 	//localFile := "/Users/jemy/Documents/github.png"         //本地文件路径
 	bucket := "zmxs" //空间名称
-	//key := "/videos" //上传文件的访问路径
 	//生成上传凭证
 	putPolicy := storage.PutPolicy{
 		Scope: bucket,
@@ -56,7 +55,7 @@ func UploadFileToServer(key, path, fileName string) (finalPath string, err error
 	// 可选配置
 	putExtra := storage.PutExtra{
 		Params: map[string]string{
-			"fileName": "github logo",
+			"fileName": fileName,
 		},
 	}
 
@@ -75,8 +74,6 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 	//将userid和视频文件名进行拼接得到最终视频文件名
 	videoName = fmt.Sprintf("%d_%s", userId, videoName)
 
-	//workPath, _ := os.Getwd()
-	//videoPath := workPath + "/static/videos/" + videoName
 	videoPath := filepath.Join("../videos/", videoName)
 	//将最终视频文件暂时保存至本地
 	if err := ctx.SaveUploadedFile(data, videoPath); err != nil {
@@ -84,19 +81,21 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 			"status_code": 1,
 			"status_msg":  "Failed to save video to host",
 		})
+
 		return err
 	}
 
 	//开始上传视频到服务器
-	finalVideoPath, err := UploadFileToServer("/videos/", videoPath, videoName)
+	finalVideoPath, err := UploadFileToServer("videos/"+videoName, videoPath, videoName)
 	if err != nil {
+
 		ctx.JSON(http.StatusOK, gin.H{
 			"status_code": 1,
 			"status_msg":  "Failed to upload video to server from submissionService",
 		})
+		fmt.Println("上传视频的err：", err)
 		return err
 	}
-	//fmt.Println(ret.Key, ret.Hash)
 
 	//调用videoService的 GetCoverPath 函数，获取封面地址,并暂时保存到了本地
 	coverPath, err := service.GetCoverPath(videoPath, 1)
@@ -110,12 +109,13 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 	}
 	//开始上传封面到服务器
 	coverName := strings.Replace(videoName, ".mp4", ".png", 1)
-	finalCoverPath, err := UploadFileToServer("/covers/", coverPath, coverName)
+	finalCoverPath, err := UploadFileToServer("covers/"+coverName, coverPath, coverName)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"status_code": 1,
 			"status_msg":  "Failed to get covers from videoService",
 		})
+		fmt.Println("上传封面的err：", err)
 		return err
 	}
 
