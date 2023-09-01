@@ -54,8 +54,17 @@ func CheckToken(token string) (*MyClaims, bool) {
 
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// 提取 token
-		token := c.Query("token")
+		var token string
+
+		// 尝试从查询参数中获取令牌
+		if queryToken := c.Query("token"); queryToken != "" {
+			token = queryToken
+		} else {
+			// 尝试从请求正文中获取令牌
+			if formToken := c.PostForm("token"); formToken != "" {
+				token = formToken
+			}
+		}
 		fmt.Println("收到Token", token, "正在进行解析")
 		// 解析 token
 		parsedToken, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
