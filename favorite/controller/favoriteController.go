@@ -93,24 +93,45 @@ func (f *FavoriteController) FavoriteAction(c *gin.Context) {
 
 // GetFavoriteList 获取点赞列表;
 func (f *FavoriteController) GetFavoriteList(c *gin.Context) {
-	strUserId := c.Query("user_id")
-	strCurId := c.GetString("userId")
-	userId, _ := strconv.ParseInt(strUserId, 10, 64)
-	curId, _ := strconv.ParseInt(strCurId, 10, 64)
-	Favorite := new(service.FavoriteService)
-	videos, err := Favorite.GetFavoriteList(userId, curId)
-	if err == nil {
-		log.Printf("获取点赞列表成功")
-		c.JSON(http.StatusOK, GetFavoriteListResponse{
-			StatusCode: 0,
-			StatusMsg:  "get favoriteList success",
-			VideoList:  videos,
-		})
+	middleware.AuthMiddleware()(c)
+	//验证Token
+	isAuthenticated, _ := c.Get("is_authenticated")
+	fmt.Println("验证token获得的信息：", isAuthenticated)
+	if isAuthenticated.(bool) {
+		// token 验证通过，可以继续处理
+
+		//根据Token获取userId
+		userIDInterface, _ := c.Get("user_id")
+		userIdInt, ok := userIDInterface.(int)
+		if !ok {
+			// 类型转换失败
+			// 这里你可以处理转换失败的情况，例如返回错误信息
+			fmt.Println("Error: Failed to convert user_id to int")
+			c.JSON(http.StatusInternalServerError, gin.H{"status_code": 2, "status_msg": " Failed to convert user_id to int"})
+			return
+		}
+		userId := int64(userIdInt)
+		//从前端接受请求参数
+		Favorite := new(service.FavoriteService)
+		videos, err := Favorite.GetFavoriteList(userId)
+		if err == nil {
+			log.Printf("获取点赞列表成功")
+			c.JSON(http.StatusOK, GetFavoriteListResponse{
+				StatusCode: 0,
+				StatusMsg:  "get favoriteList success",
+				VideoList:  videos,
+			})
+		} else {
+			log.Printf("获取点赞列表失败：%v", err)
+			c.JSON(http.StatusOK, GetFavoriteListResponse{
+				StatusCode: 1,
+				StatusMsg:  "get favoriteList fail ",
+			})
+		}
 	} else {
-		log.Printf("获取点赞列表失败：%v", err)
-		c.JSON(http.StatusOK, GetFavoriteListResponse{
-			StatusCode: 1,
-			StatusMsg:  "get favoriteList fail ",
+		// token 验证未通过，返回登录页面
+		c.JSON(http.StatusOK, &model.UserResponse{
+			Response: model.Response{StatusCode: 1, StatusMsg: "Token authentication failed"},
 		})
 	}
 }

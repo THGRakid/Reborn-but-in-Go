@@ -108,7 +108,7 @@ func (fs *FavoriteService) FavoriteAction(userId int64, videoId int64, actionTyp
 /*
 	该函数存疑
 */
-func (fs *FavoriteService) GetFavoriteList(userId int64, curId int64) ([]int64, error) {
+func (fs *FavoriteService) GetFavoriteList(userId int64) ([]int64, error) {
 	// 根据 userId 查询用户点赞的视频 id 列表
 	videoIdList, err := fs.FavoriteDao.GetFavoriteVideoIdList(userId)
 	if err != nil {
