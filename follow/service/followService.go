@@ -64,24 +64,23 @@ func (*FollowService) GetFollowerNum(userId int64) (int64, error) {
 }
 
 // GetFollowing 获取用户关注列表
-func (*FollowService) GetFollowing(userId int64) ([]model.User, error) {
+func (f *FollowService) GetFollowing(userId int64) ([]model.User, error) {
 	users := make([]model.User, 1)
-	// 查询出错
-	if err := config.DB.Raw("\nselect id, `name`, "+
-		"\ncount(if(tag = 'follower' and status is not null, 1, null)) follower_count,"+
-		"\ncount(if(tag = 'follow' and status is not null, 1, null)) follow_count,"+
-		"\n'true' is_follow\nfrom("+
-		"\nselect f1.follower_id fid, u.id, `name`, f2.status, 'follower' tag"+
+	// 查询出错。
+	if err := config.DB.Raw("select id,`name`,"+
+		"\ncount(if(tag = 'follower' and status is not null,1,null)) follower_count,"+
+		"\ncount(if(tag = 'follow' and status is not null,1,null)) follow_count,"+
+		"\n 'true' is_follow\nfrom\n("+
+		"\nselect f1.follower_id fid,u.id,`name`,f2.status,'follower' tag"+
 		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.status = 0"+
-		"\nleft join follows f2 on u.id = f2.user_id and f2.status = 0\nunion all"+
-		"\nselect f1.follower_id fid, u.id, `name`, f2.status, 'follow' tag"+
+		"\nleft join follows f2 on u.id = f2.user_id and f2.status = 0\n\tunion all"+
+		"\nselect f1.follower_id fid,u.id,`name`,f2.status,'follow' tag"+
 		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.status = 0"+
 		"\nleft join follows f2 on u.id = f2.follower_id and f2.status = 0\n) T"+
-		"\nwhere fid = ? group by fid, id,`name`", userId).Scan(&users).Error; nil != err {
+		"\nwhere fid = ? group by fid,id,`name`", userId).Scan(&users).Error; nil != err {
 		return nil, err
 	}
-	// 查询成功，返回关注对象列表
-	fmt.Println("用户关注列表查询正确")
+	// 返回关注对象列表。
 	return users, nil
 }
 
