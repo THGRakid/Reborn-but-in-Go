@@ -57,10 +57,6 @@ func (dao *UserDao) CreateUser(username string, password string) (model.User, st
 		}
 	*/
 
-	// 设置初始状态和创建时间
-	user.Status = 0
-	user.CreateAt = time.Now()
-
 	//设置用户基本信息
 	user.Name = username
 	user.Password = password

@@ -78,5 +78,6 @@ func AuthMiddleware() gin.HandlerFunc {
 
 		// 验证失败，返回未授权错误
 		c.Set("is_authenticated", false)
+		return
 	}
 }
