@@ -47,14 +47,14 @@ ffmpeg需访问http://ffmpeg.org/download.html下载安装并且配置好环境�
 https://www.bilibili.com/video/BV1xf4y1Z7pV/?spm_id_from=333.337.search-card.all.click&vd_source=e63b0e97f9f156b04320cc032690c072
 */
 func GetCoverPath(videoPath string, frameNum int) (coverPath string, err error) {
-	//获取项目路径
-	workPath, _ := os.Getwd()
-	//获取视频完整文件名（有后缀）
 	videoName := filepath.Base(videoPath)
 	//去掉视频文件后缀用作封面名
 	coverName := videoName[:len(videoName)-len(filepath.Ext(videoName))]
 	//拼接封面存放位置
-	coverPath = workPath + "/static/covers/" + coverName
+	coverPath = filepath.Join("../covers/", coverName)
+	if err := os.Mkdir("../covers", 0755); err != nil {
+		fmt.Println("在ffmpeg中创建目录时报错：", err)
+	}
 	//开始制作视频封面
 	buf := bytes.NewBuffer(nil)
 	err = ffmpeg.Input(videoPath).Filter("select", ffmpeg.Args{fmt.Sprintf("gte(n,%d)", frameNum)}).
@@ -76,7 +76,5 @@ func GetCoverPath(videoPath string, frameNum int) (coverPath string, err error) 
 		log.Fatal("生成缩略图失败3：", err)
 		return "", err
 	}
-	//返回绝对路径
-	//coverPath = coverPath[len(workPath):] + ".png"
-	return coverPath, err
+	return coverPath + ".png", err
 }
