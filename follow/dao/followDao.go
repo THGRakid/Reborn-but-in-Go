@@ -33,8 +33,8 @@ func (*FollowDao) InsertFollowRelation(userId int64, targetId int64) (bool, erro
 	// 生成需要插入的关系结构体。
 	date := time.Now()
 	follow := model.Follow{
-		UserID:     userId,
-		FollowerID: targetId,
+		UserId:     userId,
+		FollowerId: targetId,
 		CreateAt:   date,
 	}
 	// 插入失败，返回err.
@@ -43,6 +43,20 @@ func (*FollowDao) InsertFollowRelation(userId int64, targetId int64) (bool, erro
 		return false, err
 	}
 	// 插入成功
+	return true, nil
+}
+
+// DeleteFollowRelation 给定用户和取消关注对象id，取消其关系
+func (*FollowDao) DeleteFollowRelation(userId int64, targetId int64) (bool, error) {
+	// 更新失败，返回错误。
+	if err := config.DB.Model(&model.Follow{}).
+		Where("user_id = ? AND follower_id = ? AND status = ?", userId, targetId, 0).
+		Update("status", 1).Error; nil != err {
+		// 更新失败，打印错误日志。
+		log.Println(err.Error())
+		return false, err
+	}
+	// 更新成功。
 	return true, nil
 }
 

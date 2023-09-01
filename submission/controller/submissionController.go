@@ -32,9 +32,16 @@ func (c *SubmissionController) Publish(ctx *gin.Context) {
 		// token 验证通过，可以继续处理
 
 		//根据Token获取userId
-		userIdString := ctx.Query("user_id")
-		//获取的string转换成int64
-		userId, _ := strconv.ParseInt(userIdString, 10, 64)
+		userIDInterface, _ := ctx.Get("user_id")
+		userIdInt, ok := userIDInterface.(int)
+		if !ok {
+			// 类型转换失败
+			// 这里你可以处理转换失败的情况，例如返回错误信息
+			fmt.Println("Error: Failed to convert user_id to int")
+			ctx.JSON(http.StatusInternalServerError, gin.H{"status_code": 2, "status_msg": " Failed to convert user_id to int"})
+			return
+		}
+		userId := int64(userIdInt)
 		//从前端接收请求参数
 		data, err := ctx.FormFile("data")
 		title := ctx.PostForm("title")
