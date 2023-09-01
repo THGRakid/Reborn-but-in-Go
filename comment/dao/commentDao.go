@@ -27,44 +27,18 @@ func NewCommentDaoInstance() *CommentDao {
 	return commentDao
 }
 
-// Count
-// 1、使用 video id 查询 Comment 数量
-func (*CommentDao) Count(videoId int64) (int64, error) {
-	log.Println("CommentDao-Count: running")
-	var count int64
-
-	// 数据库查询评论数量，注意要使用 model.Comment 结构体
-	err := config.DB.Model(&model.Comment{}).Where(map[string]interface{}{"video_id": videoId, "status": 1}).Count(&count).Error
-	if err != nil {
-		log.Println("CommentDao-Count: return count failed")
-		return -1, err
-	}
-	log.Println("CommentDao-Count: return count success")
-	return count, nil
-}
-
-// CommentIdList
-// 2、根据视频id获取评论id列表
-func (*CommentDao) CommentIdList(videoId int64) ([]int64, error) {
-	var commentIdList []int64
-
-	// 从数据库中查询评论id列表，注意要使用 model.Comment 结构体
-	err := config.DB.Model(&model.Comment{}).Select("id").Where("video_id = ?", videoId).Find(&commentIdList).Error
-	if err != nil {
-		log.Println("CommentDao-CommentIdList: query comment id list failed")
-		return nil, err
-	}
-	return commentIdList, nil
-}
-
-// InsertComment
-// 3、发表评论
-func (*CommentDao) InsertComment(comment model.Comment) (model.Comment, error) {
+// InsertComment 插入评论
+func (*CommentDao) InsertComment(videoID, userID int64, content string) (model.Comment, error) {
 	log.Println("CommentDao-InsertComment: running")
 
-	// 在评论结构体中设置默认值
-	comment.Status = 1
-	comment.CreateAt = time.Now()
+	// 创建评论结构体实例，并设置默认值
+	comment := model.Comment{
+		VideoId:  videoID,
+		UserId:   userID,
+		Content:  content,
+		Status:   1,
+		CreateAt: time.Now(),
+	}
 
 	// 向数据库插入一条评论信息
 	err := config.DB.Model(&model.Comment{}).Create(&comment).Error
@@ -76,21 +50,20 @@ func (*CommentDao) InsertComment(comment model.Comment) (model.Comment, error) {
 	return comment, nil
 }
 
-// DeleteComment
-// 4、删除评论，传入评论id
-func (*CommentDao) DeleteComment(id int64) error {
+// DeleteComment 删除评论
+func (*CommentDao) DeleteComment(commentID int64) error {
 	log.Println("CommentDao-DeleteComment: running")
 
 	// 查询评论信息，检查是否存在且为有效评论
 	var commentInfo model.Comment
-	result := config.DB.Model(&model.Comment{}).Where(map[string]interface{}{"id": id, "status": 1}).First(&commentInfo)
+	result := config.DB.Model(&model.Comment{}).Where("id = ? AND status = ?", commentID, 1).First(&commentInfo)
 	if result.RowsAffected == 0 {
 		log.Println("CommentDao-DeleteComment: comment does not exist")
 		return errors.New("comment does not exist")
 	}
 
 	// 将评论状态更新为无效
-	err := config.DB.Model(&model.Comment{}).Where("id = ?", id).Update("status", 0).Error
+	err := config.DB.Model(&model.Comment{}).Where("id = ?", commentID).Update("status", 0).Error
 	if err != nil {
 		log.Println("CommentDao-DeleteComment: delete comment failed")
 		return err
@@ -99,14 +72,13 @@ func (*CommentDao) DeleteComment(id int64) error {
 	return nil
 }
 
-// GetCommentList
-// 5、根据视频id查询所属评论全部列表信息
-func (*CommentDao) GetCommentList(videoId int64) ([]model.Comment, error) {
+// GetCommentList 获取评论列表
+func (*CommentDao) GetCommentList(videoID int64) ([]model.Comment, error) {
 	log.Println("CommentDao-GetCommentList: running")
 
 	// 查询评论信息列表，按时间倒序排列
 	var commentList []model.Comment
-	result := config.DB.Model(&model.Comment{}).Where(map[string]interface{}{"video_id": videoId, "status": 1}).
+	result := config.DB.Model(&model.Comment{}).Where("video_id = ? AND status = ?", videoID, 1).
 		Order("create_at desc").Find(&commentList)
 
 	// 若没有评论信息，返回空列表而不是错误
