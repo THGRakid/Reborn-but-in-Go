@@ -47,50 +47,57 @@ type FollowersResp struct {
 // RelationAction 处理关注和取消关注请求。
 func (f *FollowController) RelationAction(c *gin.Context) {
 	middleware.AuthMiddleware()(c)
-	//验证Token
+	// 验证Token
 	isAuthenticated, _ := c.Get("is_authenticated")
-	fmt.Println("验证token获得的信息：", isAuthenticated)
-	if isAuthenticated.(bool) {
-		// token 验证通过，可以继续处理
+	fmt.Println("验证 token 获得的信息：", isAuthenticated)
+	// token 验证失败
+	if !isAuthenticated.(bool) {
+		log.Println("token 验证失败")
+		return
+	}
+	// token 验证通过，可以继续处理
+	userIDInterface, _ := c.Get("user_id")
+	userIdInt, err1 := userIDInterface.(int)
+	if !err1 {
+		// 类型转换失败
+		fmt.Println("用户id格式错误")
+		c.JSON(http.StatusInternalServerError, gin.H{"status_code": 2, "status_msg": " Failed to convert user_id to int"})
+		return
+	}
+	userId := int64(userIdInt)
+	toUserId, err2 := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
+	actionType, err3 := strconv.ParseInt(c.Query("action_type"), 10, 64)
 
-		//根据Token获取userId
-		userIdString := c.Query("user_id")
-		//获取的string转换成int64
-		userId, err1 := strconv.ParseInt(userIdString, 10, 64)
-		toUserId, err2 := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
-		actionType, err3 := strconv.ParseInt(c.Query("action_type"), 10, 64)
+	fmt.Println(userId, toUserId, actionType)
 
-		fmt.Println(c)
-		fmt.Println(userIdString, userId, toUserId, actionType)
-
-		// 传入参数格式有问题。
-		if nil != err1 || nil != err2 || nil != err3 || actionType < 1 || actionType > 2 {
-			fmt.Printf("失败")
-			c.JSON(http.StatusOK, RelationActionResp{
-				Response{
-					StatusCode: -1,
-					StatusMsg:  "用户id格式错误",
-				},
-			})
-			return
-		}
-		// 正常处理
-		switch {
-		// 关注
-		case 1 == actionType:
-			go dao.NewFollowDaoInstance().InsertFollowRelation(userId, toUserId)
-		// 取关
-		case 2 == actionType:
-			go dao.NewFollowDaoInstance().InsertFollowRelation(userId, toUserId)
-		}
-		log.Println("关注、取关成功。")
+	// 传入参数格式有问题。
+	if nil != err2 || nil != err3 || actionType < 1 || actionType > 2 {
+		fmt.Printf("参数有误")
 		c.JSON(http.StatusOK, RelationActionResp{
 			Response{
-				StatusCode: 0,
-				StatusMsg:  "OK",
+				StatusCode: -1,
+				StatusMsg:  "用户id格式错误",
 			},
 		})
+		return
 	}
+	// 正常处理
+	switch {
+	// 关注
+	case 1 == actionType:
+		go dao.NewFollowDaoInstance().InsertFollowRelation(userId, toUserId)
+		log.Println("关注成功。")
+	// 取关
+	case 2 == actionType:
+		go dao.NewFollowDaoInstance().DeleteFollowRelation(userId, toUserId)
+		log.Println("取关成功。")
+	}
+	c.JSON(http.StatusOK, RelationActionResp{
+		Response{
+			StatusCode: 0,
+			StatusMsg:  "OK",
+		},
+	})
 }
 
 // GetFollowing 处理获取关注列表请求。
