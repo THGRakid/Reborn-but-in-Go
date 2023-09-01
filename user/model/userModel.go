@@ -2,11 +2,11 @@ package model
 
 // User 持久层结构块
 type User struct {
-	Id              int64  `json:"id,omitempty"`             //用户id
-	Name            string `json:"name,omitempty"`           //用户名称（不重复）
-	FollowCount     int64  `json:"follow_count,omitempty"`   //关注人数
-	FollowerCount   int64  `json:"follower_count,omitempty"` //粉丝人数
-	IsFollow        bool   `json:"is_follow,omitempty"`      // true-已关注，false-未关注
+	Id              int64  `json:"id,omitempty"`   //用户id
+	Name            string `json:"name,omitempty"` //用户名称（不重复）
+	FollowCount     int64  `json:"follow_count"`   //关注人数
+	FollowerCount   int64  `json:"follower_count"` //粉丝人数
+	IsFollow        bool   `json:"is_follow"`      // true-已关注，false-未关注
 	Password        string //密码
 	Avatar          string `json:"avatar,omitempty"`           //用户头像
 	BackgroundImage string `json:"background_image,omitempty"` //背景图像

@@ -86,11 +86,9 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 	// 关注
 	case 1 == actionType:
 		go dao.NewFollowDaoInstance().InsertFollowRelation(userId, toUserId)
-		log.Println("关注成功。")
 	// 取关
 	case 2 == actionType:
 		go dao.NewFollowDaoInstance().DeleteFollowRelation(userId, toUserId)
-		log.Println("取关成功。")
 	}
 	c.JSON(http.StatusOK, RelationActionResp{
 		Response{
@@ -103,6 +101,9 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 // GetFollowing 处理获取关注列表请求。
 func (f *FollowController) GetFollowing(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
+
+	fmt.Println("userId 看这里", userId)
+
 	// 用户id解析出错。
 	if nil != err {
 		fmt.Println("用户id格式错误")
