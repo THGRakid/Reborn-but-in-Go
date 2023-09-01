@@ -60,6 +60,7 @@ func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8)
 // InsertFavorite 插入点赞数据
 func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 	// 创建点赞数据，默认为点赞，status为1
+	FavoriteData.Status = 1
 	err := config.DB.Model(model.Favorite{}).Create(&FavoriteData).Error
 	if err != nil {
 		log.Println(err.Error())
