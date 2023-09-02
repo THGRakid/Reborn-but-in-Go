@@ -15,5 +15,5 @@ type Comment struct {
 
 // TableName 修改表名映射
 func (Comment) TableName() string {
-	return "comment"
+	return "comments"
 }
