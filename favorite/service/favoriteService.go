@@ -3,6 +3,8 @@ package service
 import (
 	"Reborn-but-in-Go/favorite/dao"
 	vidDao "Reborn-but-in-Go/video/dao"
+	vidMod "Reborn-but-in-Go/video/model"
+	"fmt"
 	"log"
 )
 
@@ -104,7 +106,7 @@ func (fs *FavoriteService) FavoriteAction(userId int64, videoId int64, actionTyp
 	return nil
 }
 
-// GetFavoriteList 函数根据给定的 userId 和 curId 获取用户的点赞视频列表。
+// GetFavoriteList 函数根据给定的 userId 和 curId 获取用户的点赞视频列表。(返回值是videoid)
 /*
 	该函数存疑
 */
@@ -117,4 +119,24 @@ func (fs *FavoriteService) GetFavoriteList(userId int64) ([]int64, error) {
 	}
 
 	return videoIdList, nil
+}
+
+// GetFavoriteList 函数根据给定的 userId 和 curId 获取用户的点赞视频列表。(返回值是video结构体的切片)
+func (fs *FavoriteService) GetVideosByVideoIDs(videoIDs []int64) ([]vidMod.Video, error) {
+	videos := make([]vidMod.Video, 0)
+
+	for _, videoID := range videoIDs {
+		video, err := vidDao.NewVideoDaoInstance().GetVideoById(videoID)
+		if err != nil {
+			// 处理获取视频信息失败的情况
+			// 这里可以根据具体情况记录日志或采取其他措施
+			fmt.Printf("获取视频信息失败，videoID: %d, 错误: %v\n", videoID, err)
+			continue
+		}
+
+		// 将获取到的视频信息添加到结果切片中
+		videos = append(videos, *video)
+	}
+
+	return videos, nil
 }

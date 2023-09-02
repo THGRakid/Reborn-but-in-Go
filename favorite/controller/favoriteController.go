@@ -4,6 +4,7 @@ import (
 	"Reborn-but-in-Go/favorite/service"
 	"Reborn-but-in-Go/middleware"
 	"Reborn-but-in-Go/user/model"
+	viddao "Reborn-but-in-Go/video/model"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -28,10 +29,9 @@ type FavoriteResponse struct {
 }
 
 type GetFavoriteListResponse struct {
-	StatusCode int32   `json:"status_code"`
-	StatusMsg  string  `json:"status_msg,omitempty"`
-	VideoList  []int64 `json:"video_list,omitempty"`
-	//VideoList  []model.Video `json:"video_list,omitempty"`
+	StatusCode int32          `json:"status_code"`
+	StatusMsg  string         `json:"status_msg,omitempty"`
+	VideoList  []viddao.Video `json:"video_list,omitempty"`
 	//错误情况，后续videoList使用类型为[]int64，而本需要[]model.Video ，需完成对接工作。未更改
 }
 
@@ -114,12 +114,13 @@ func (f *FavoriteController) GetFavoriteList(c *gin.Context) {
 		//从前端接受请求参数
 		Favorite := new(service.FavoriteService)
 		videos, err := Favorite.GetFavoriteList(userId)
+		videolist, err := Favorite.GetVideosByVideoIDs(videos)
 		if err == nil {
 			log.Printf("获取点赞列表成功")
 			c.JSON(http.StatusOK, GetFavoriteListResponse{
 				StatusCode: 0,
 				StatusMsg:  "get favoriteList success",
-				VideoList:  videos,
+				VideoList:  videolist,
 			})
 		} else {
 			log.Printf("获取点赞列表失败：%v", err)
