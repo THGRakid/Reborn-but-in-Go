@@ -22,9 +22,22 @@ func NewCommentController(commentService *service.CommentService) *CommentContro
 }
 
 type CommentResponse struct {
-	StatusCode int32  `json:"status_code"`
-	StatusMsg  string `json:"status_msg,omitempty"`
-	Comment    string `json:"comment,omitempty"`
+	StatusCode int32   `json:"status_code"`
+	StatusMsg  string  `json:"status_msg,omitempty"`
+	Comment    Comment `json:"comment,omitempty"`
+}
+
+type Comment struct {
+	ID         int64  `json:"id"`
+	User       User   `json:"user"`
+	Content    string `json:"content"`
+	CreateDate string `json:"create_date"`
+}
+
+type User struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+	// 其他用户信息字段
 }
 
 type GetCommentResponse struct {
@@ -79,7 +92,15 @@ func (controller *CommentController) HandleCommentAction(c *gin.Context) {
 		// 返回新创建的评论
 		c.JSON(http.StatusOK, CommentResponse{
 			StatusCode: 0,
-			Comment:    newComment.Content, // 获取评论内容
+			Comment: Comment{
+				ID: newComment.UserId,
+				User: User{
+					ID:   newComment.UserId, // 使用评论的用户ID
+					Name: "ceshi",           // 其他用户信息字段
+				},
+				Content:    newComment.Content,
+				CreateDate: newComment.CreateAt.Format("01-02-2006"), // 格式化创建日期为 mm-dd 格式
+			}, // 获取评论内容
 		})
 	case 2:
 		// 从请求参数中获取评论ID
