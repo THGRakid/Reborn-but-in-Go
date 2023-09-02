@@ -30,12 +30,11 @@ func NewSubmissionService(submissionDao *dao.SubmissionDao) *SubmissionService {
 	}
 }
 
-// UploadFileToServer 传入保存到服务器上的地址，本地文件地址，文件名，保存文件到服务器并返回文件存储地址
-func UploadFileToServer(key, path, fileName string) (finalPath string, err error) {
+// UploadFileToServer 传入要保存到服务器上的地址以及本地文件地址，保存文件到服务器并返回文件存储地址
+func UploadFileToServer(key, path string) (finalPath string, err error) {
 	accessKey := "LZPQ0Bx_xldazTQsnD1VYvnIe3aWSPhQsLGF9lML" //密钥
 	secretKey := "uVj2nC2fn2KlkROZppBNPXOz6zrJpEV_J99ehZto" //密钥
-	//localFile := "/Users/jemy/Documents/github.png"         //本地文件路径
-	bucket := "zmxs" //空间名称
+	bucket := "zmxs"                                        //空间名称
 	//生成上传凭证
 	putPolicy := storage.PutPolicy{
 		Scope: bucket,
@@ -53,21 +52,14 @@ func UploadFileToServer(key, path, fileName string) (finalPath string, err error
 	formUploader := storage.NewFormUploader(&cfg)
 	ret := storage.PutRet{}
 	// 可选配置
-	putExtra := storage.PutExtra{
-		Params: map[string]string{
-			"fileName": fileName,
-		},
-	}
+	putExtra := storage.PutExtra{}
 
 	err = formUploader.PutFile(context.Background(), &ret, upToken, key, path, &putExtra)
 
-	return "http://s0apnlizm.hn-bkt.clouddn.com/" + key + fileName, err
+	return "http://s0apnlizm.hn-bkt.clouddn.com/" + key, err
 }
 
-// 假定视频地址和封面地址，如何获取呢？
-//var VideoPath string = ""
-
-// 1、投稿视频 ？？？data怎么处理？？？
+// CreateVideo 保存视频到
 func (s *SubmissionService) CreateVideo(userId int64, title string, data *multipart.FileHeader, ctx *gin.Context) error {
 	//获取文件名
 	videoName := filepath.Base(data.Filename)
@@ -86,7 +78,7 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 	}
 
 	//开始上传视频到服务器
-	finalVideoPath, err := UploadFileToServer("videos/"+videoName, videoPath, videoName)
+	finalVideoPath, err := UploadFileToServer("videos/"+videoName, videoPath)
 	if err != nil {
 
 		ctx.JSON(http.StatusOK, gin.H{
@@ -109,7 +101,7 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 	}
 	//开始上传封面到服务器
 	coverName := strings.Replace(videoName, ".mp4", ".png", 1)
-	finalCoverPath, err := UploadFileToServer("covers/"+coverName, coverPath, coverName)
+	finalCoverPath, err := UploadFileToServer("covers/"+coverName, coverPath)
 	if err != nil {
 		ctx.JSON(http.StatusOK, gin.H{
 			"status_code": 1,
