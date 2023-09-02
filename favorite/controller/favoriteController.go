@@ -1,12 +1,14 @@
 package controller
 
 import (
+	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/favorite/service"
 	"Reborn-but-in-Go/middleware"
 	"Reborn-but-in-Go/user/model"
-	viddao "Reborn-but-in-Go/video/model"
+	vidMod "Reborn-but-in-Go/video/model"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strconv"
@@ -31,7 +33,7 @@ type FavoriteResponse struct {
 type GetFavoriteListResponse struct {
 	StatusCode int32          `json:"status_code"`
 	StatusMsg  string         `json:"status_msg,omitempty"`
-	VideoList  []viddao.Video `json:"video_list,omitempty"`
+	VideoList  []vidMod.Video `json:"video_list,omitempty"`
 	//错误情况，后续videoList使用类型为[]int64，而本需要[]model.Video ，需完成对接工作。未更改
 }
 
@@ -66,12 +68,26 @@ func (f *FavoriteController) FavoriteAction(c *gin.Context) {
 		err := Favorite.FavoriteAction(userId, videoId, int8(actionType))
 		if err == nil && actionType == 1 {
 			log.Printf("点赞成功")
+			verr := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"user_id": userId, "id": videoId}).
+				Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
+			if verr != nil {
+				log.Println(verr.Error())
+				return
+			}
+			log.Printf("点赞数量加一")
 			c.JSON(http.StatusOK, FavoriteResponse{
 				StatusCode: 0,
 				StatusMsg:  "favorite action success",
 			})
 		} else if err == nil && actionType == 2 {
 			log.Printf("取消赞成功")
+			verr := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"user_id": userId, "id": videoId}).
+				Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
+			if verr != nil {
+				log.Println(verr.Error())
+				return
+			}
+			log.Printf("点赞数量减一")
 			c.JSON(http.StatusOK, FavoriteResponse{
 				StatusCode: 0,
 				StatusMsg:  "remove favorite action success",

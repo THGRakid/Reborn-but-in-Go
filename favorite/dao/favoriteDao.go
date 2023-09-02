@@ -49,24 +49,30 @@ func (*FavoriteDao) GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 // InsertFavorite 插入点赞数据
 func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 	// 创建点赞数据，默认为点赞，status为1
-	FavoriteData.Status = 1
 	err := config.DB.Model(model.Favorite{}).Create(&FavoriteData).Error
 	if err != nil {
 		log.Println(err.Error())
 		return errors.New("insert data fail")
 	}
+	log.Printf("添加点赞记录成功")
 	return nil
 }
 
-// UpdateFavorite 根据userId，videoId,actionType点赞或者取消赞
+// UpdateFavorite 取消赞删除记录
 func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8) error {
-	// 更新当前用户观看视频的点赞状态
-	err := config.DB.Model(model.Favorite{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).
-		Update("status", actionType).Error
-	if err != nil {
-		log.Println(err.Error())
-		return errors.New("update data fail")
+	if actionType == 2 {
+		// 删除记录
+		err := config.DB.Delete(&model.Favorite{}, "user_id = ? AND video_id = ?", userId, videoId).Error
+		if err != nil {
+			log.Printf("删除记录失败：%v", err)
+			return err
+		}
+		log.Printf("删除点赞记录成功")
+	} else {
+		// 其他操作或错误处理
+		return errors.New("不支持的操作类型")
 	}
+
 	return nil
 }
 func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionType int8) error {
@@ -91,7 +97,6 @@ func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionTy
 		}
 	} else {
 		// 如果记录存在，只修改 status 为 actionType
-		existingFavorite.Status = actionType
 		err := favoriteDao.UpdateFavorite(userId, videoId, actionType)
 		if err != nil {
 			log.Println(err.Error())
