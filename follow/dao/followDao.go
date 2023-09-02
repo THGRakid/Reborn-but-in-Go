@@ -106,20 +106,23 @@ func (*FollowDao) DeleteFollowRelation(userId int64, targetId int64) (bool, erro
 func (*FollowDao) FindRelation(userId int64, targetId int64) (*model.Follow, error) {
 	// follow变量用于后续存储数据库查出来的用户关系。
 	follow := model.Follow{}
-	//当查询出现错误时，日志打印err msg，并return err.
-	if err := config.DB.Model(model.Follow{}).
-		Where("user_id = ?", targetId).
-		Where("follower_id = ?", userId).
-		Take(&follow).Error; nil != err {
-		// 当没查到数据时，gorm也会报错。
-		if "record not found" == err.Error() {
+	result := config.DB.Where("user_id = ? AND follower_id = ? AND status = 1", userId, targetId).
+		First(&follow)
+	if result.Error != nil {
+		// 处理查询错误
+		if result.Error == gorm.ErrRecordNotFound {
+			// 如果记录不存在，说明当前用户没有关注目标用户
+			fmt.Println("当前用户没有关注目标用户")
+			return nil, nil
+		} else {
+			fmt.Println("查询关注信息时发生错误:", result.Error)
 			return nil, nil
 		}
-		log.Println(err.Error())
-		return nil, err
+	} else {
+		// 如果查询成功，说明当前用户关注了目标用户
+		fmt.Println("当前用户已关注目标用户")
+		return &follow, nil
 	}
-	//正常情况，返回取到的值和空err.
-	return &follow, nil
 }
 
 // GetFollowerNum 给定当前用户id，查询follow表中该用户的粉丝数。

@@ -5,6 +5,7 @@ import (
 	"Reborn-but-in-Go/follow/dao"
 	"Reborn-but-in-Go/user/model"
 	"fmt"
+	"log"
 )
 
 //	// AddFollowRelation 当前用户关注目标用户
@@ -28,15 +29,11 @@ func (*FollowService) IsFollowing(userId int64, targetId int64) (bool, error) {
 	// SQL中查询
 	relation, err := dao.NewFollowDaoInstance().FindRelation(userId, targetId)
 
-	if nil != err {
+	if nil != err || nil == relation {
 		return false, err
+	} else {
+		return true, nil
 	}
-
-	if nil == relation {
-		return false, nil
-	}
-
-	return true, nil
 }
 
 // GetFollowingNum 根据用户id来查询该用户关注数目
@@ -80,7 +77,9 @@ func (f *FollowService) GetFollowing(userId int64) ([]model.User, error) {
 		"\nwhere fid = ? group by fid,id,`name`", userId).Scan(&users).Error; nil != err {
 		return nil, err
 	}
-	// 返回关注对象列表。
+	// 查询成功
+	fmt.Println("关注列表: ", users)
+	log.Println("用户关注列表查询正确")
 	return users, nil
 }
 
@@ -103,10 +102,11 @@ func (*FollowService) GetFollowers(userId int64) ([]model.User, error) {
 		"\n) T group by fid, id, `name`"+
 		"\n) T on f.user_id = T.id and f.follower_id = T.fid and f.status = 0 where fid = ?", userId).
 		Scan(&users).Error; nil != err {
-		// 查询出错
+		log.Println("用户粉丝列表查询错误")
 		return nil, err
 	}
 	// 查询成功
-	fmt.Println("用户粉丝列表查询正确")
+	fmt.Println("粉丝列表: ", users)
+	log.Println("用户粉丝列表查询正确")
 	return users, nil
 }
