@@ -24,9 +24,9 @@ func NewFavoriteService(favoriteDao *dao.FavoriteDao) *FavoriteService {
 */
 
 // IsFavorite 根据当前视频id判断是否点赞了该视频。
-func (fs *FavoriteService) IsFavorite(videoId int64, userId int64) (bool, error) {
+func IsFavorite(videoId int64, userId int64) (bool, error) {
 	// 根据userId查询Favorites表，返回点赞的videoId列表
-	videoIdList, err := fs.FavoriteDao.GetFavoriteVideoIdList(userId)
+	videoIdList, err := dao.GetFavoriteVideoIdList(userId)
 	if err != nil {
 		log.Printf(err.Error())
 		return false, err
@@ -82,7 +82,7 @@ func (fs *FavoriteService) GetTotalFavoriteCount(userId int64) (int64, error) {
 
 // GetTotalFavoriteVideoCount 根据userId获取这个用户点赞视频数量
 func (fs *FavoriteService) GetTotalFavoriteVideoCount(userId int64) (int64, error) {
-	videoIdList, err := fs.FavoriteDao.GetFavoriteVideoIdList(userId)
+	videoIdList, err := dao.GetFavoriteVideoIdList(userId)
 	if err != nil {
 		log.Printf(err.Error())
 		return 0, err
@@ -112,7 +112,7 @@ func (fs *FavoriteService) FavoriteAction(userId int64, videoId int64, actionTyp
 */
 func (fs *FavoriteService) GetFavoriteList(userId int64) ([]int64, error) {
 	// 根据 userId 查询用户点赞的视频 id 列表
-	videoIdList, err := fs.FavoriteDao.GetFavoriteVideoIdList(userId)
+	videoIdList, err := dao.GetFavoriteVideoIdList(userId)
 	if err != nil {
 		log.Printf("获取用户点赞视频列表错误：%v", err)
 		return nil, err

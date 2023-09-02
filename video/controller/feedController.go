@@ -104,12 +104,20 @@ func (controller *feedController) Feed(c *gin.Context) {
 			if isAuthenticated.(bool) {
 				// token 验证通过，可以继续处理
 				// 获取userId
-				userIdString := c.Query("user_id")
-				userId, _ := strconv.Atoi(userIdString)
-				uid1 := int64(userId) //用户id
-				uid2 := v.UserId      //视频发布者id
-				fmt.Println("feed层获取到的视频发布者ID：", v.Id)
-				isFollow, _ := controller.FollowService.IsFollowing(uid1, uid2) //传入两个userId，检查是否关注
+				//userIdString := c.Query("user_id")
+				userIdString, _ := c.Get("user_id")
+				userIdInt, ok := userIdString.(int)
+				if !ok {
+					fmt.Println("Error: Failed to convert user_id to int")
+				}
+				userId := int64(userIdInt)
+				uid1 := userId                                          //用户id
+				uid2 := v.UserId                                        //视频发布者id
+				isFollow, err1 := followService.IsFollowing(uid1, uid2) //传入两个userId，检查是否关注
+
+				if err1 != nil {
+					fmt.Println(err1)
+				}
 				if isFollow {
 					feedUser.IsFollow = true
 				}
@@ -124,12 +132,19 @@ func (controller *feedController) Feed(c *gin.Context) {
 		if isAuthenticated.(bool) {
 			// token 验证通过，可以继续处理
 			// 获取userId
-			userIdString := c.Query("user_id")
-			userId, _ := strconv.Atoi(userIdString)
-			uid := int64(userId)                                             //用户id
-			vid := v.Id                                                      // 视频id
-			isFavorite, _ := controller.FavoriteService.IsFavorite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
-			if isFavorite {                                                  //有点赞记录
+			userIdString, _ := c.Get("user_id")
+			userIdInt, ok := userIdString.(int)
+			if !ok {
+				fmt.Println("Error: Failed to convert user_id to int")
+			}
+			userId := int64(userIdInt)
+			uid := userId                                           //用户id
+			vid := v.Id                                             // 视频id
+			isFavorite, err := favoriteService.IsFavorite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
+			if err != nil {
+				fmt.Println(err)
+			}
+			if isFavorite { //有点赞记录
 				tmp.IsFavorite = true
 			}
 		}
