@@ -25,7 +25,7 @@ func NewFollowService(followDao *dao.FollowDao) *FollowService {
 }
 
 // IsFollowing 根据当前用户id和目标用户id来判断当前用户是否关注了目标用户
-func (*FollowService) IsFollowing(userId int64, targetId int64) (bool, error) {
+func IsFollowing(userId int64, targetId int64) (bool, error) {
 	// SQL中查询
 	relation, err := dao.NewFollowDaoInstance().FindRelation(userId, targetId)
 
