@@ -106,7 +106,7 @@ func (*FollowDao) DeleteFollowRelation(userId int64, targetId int64) (bool, erro
 func (*FollowDao) FindRelation(userId int64, targetId int64) (*model.Follow, error) {
 	// follow变量用于后续存储数据库查出来的用户关系。
 	follow := model.Follow{}
-	result := config.DB.Where("user_id = ? AND follower_id = ? AND status = 1", userId, targetId).
+	result := config.DB.Where("user_id = ? AND follower_id = ? AND status = 0", userId, targetId).
 		First(&follow)
 	if result.Error != nil {
 		// 处理查询错误
