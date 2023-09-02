@@ -129,7 +129,7 @@ func (*FollowDao) GetFollowerNum(userId int64) (int64, error) {
 	// 当查询出现错误的情况，日志打印err msg，并返回err.
 	if err := config.DB.
 		Model(model.Follow{}).
-		Where("UserID = ?", userId).
+		Where("user_id = ?", userId).
 		Count(&num).Error; nil != err {
 		log.Println(err.Error())
 		return 0, err
@@ -144,7 +144,7 @@ func (*FollowDao) GetFollowingCnt(userId int64) (int64, error) {
 	var cnt int64
 	// 查询出错，日志打印err msg，并return err
 	if err := config.DB.Model(model.Follow{}).
-		Where("FollowerID = ?", userId).
+		Where("follower_id = ?", userId).
 		Count(&cnt).Error; nil != err {
 		log.Println(err.Error())
 		return 0, err
