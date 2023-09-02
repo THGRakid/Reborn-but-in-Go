@@ -3,24 +3,29 @@ package comment
 import (
 	"Reborn-but-in-Go/comment/controller"
 	"Reborn-but-in-Go/comment/dao"
-	"Reborn-but-in-Go/comment/service"
+	commentService "Reborn-but-in-Go/comment/service"
+	userD "Reborn-but-in-Go/user/dao"
+	userService "Reborn-but-in-Go/user/service"
 	"github.com/gin-gonic/gin"
 )
 
 func InitCommentRouter(r *gin.Engine) {
-	// 创建数据访问层（DAO）的单例实例
+	// 创建评论数据访问层（DAO）的单例实例
 	commentDao := dao.NewCommentDaoInstance()
 
-	// 创建服务层（Service）的实例，传递数据访问层实例
-	commentService := service.NewCommentService(commentDao)
+	// 创建评论服务层（Service）的实例，传递评论DAO实例
+	commentServiceInstance := commentService.NewCommentService(commentDao)
 
-	// 创建表现层（Controller）的实例，传递服务层实例
-	commentController := controller.NewCommentController(commentService)
+	// 创建用户数据访问层（DAO）的单例实例
+	userDao := userD.NewUserDaoInstance()
 
-	// 注册 GET 路由，查看视频的所有评论，按发布时间倒序，使用表现层中的 GetCommentList 函数
+	// 创建用户服务层（Service）的实例，传递用户DAO实例
+	userServiceInstance := userService.NewUserService(userDao)
+
+	// 创建评论控制器的实例，传递评论服务层和用户服务层实例
+	commentController := controller.NewCommentController(commentServiceInstance, userServiceInstance)
+
+	// 注册路由
 	r.GET("/douyin/comment/list/", commentController.GetCommentList)
-
-	// 注册 POST 路由，登录用户对视频进行评论，使用表现层中的 HandleCommentAction 函数
 	r.POST("/douyin/comment/action/", commentController.HandleCommentAction)
-
 }
