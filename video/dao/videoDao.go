@@ -46,7 +46,7 @@ func (*VideoDao) GetVideoListByUserId(userId int64) ([]model.Video, error) {
 func (*VideoDao) GetVideoById(videoId int64) (*model.Video, error) {
 	video := model.Video{Id: videoId}
 
-	result := config.DB.Where("video_id = ?", videoId).First(&video)
+	result := config.DB.Where("id = ?", videoId).First(&video)
 	err := result.Error
 	if err != nil {
 		fmt.Println("根据videoId查询Video实体失败")
