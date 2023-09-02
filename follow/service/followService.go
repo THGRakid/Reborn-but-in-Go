@@ -5,6 +5,7 @@ import (
 	"Reborn-but-in-Go/follow/dao"
 	"Reborn-but-in-Go/user/model"
 	"fmt"
+	"log"
 )
 
 //	// AddFollowRelation 当前用户关注目标用户
@@ -38,25 +39,35 @@ func IsFollowing(userId int64, targetId int64) (bool, error) {
 // GetFollowingNum 根据用户id来查询该用户关注数目
 func (*FollowService) GetFollowingNum(userId int64) (int64, error) {
 	// SQL中查询
-	ids, err := dao.NewFollowDaoInstance().GetFollowingIds(userId)
+	ids, err1 := dao.NewFollowDaoInstance().GetFollowingIds(userId)
 
-	if nil != err {
-		return 0, err
+	if nil != err1 {
+		return 0, err1
+	} else {
+		newFollowCount := int64(len(ids))
+		err2 := config.DB.Model(&model.User{}).
+			Where("id = ?", userId).
+			Update("follow_count", newFollowCount).Error
+		log.Println("更新数据库成功")
+		return newFollowCount, err2
 	}
-
-	return int64(len(ids)), err
 }
 
 // GetFollowerNum 根据用户id来查询该用户的粉丝数目
 func (*FollowService) GetFollowerNum(userId int64) (int64, error) {
 	// SQL中查询
-	ids, err := dao.NewFollowDaoInstance().GetFollowersIds(userId)
+	ids, err1 := dao.NewFollowDaoInstance().GetFollowersIds(userId)
 
-	if nil != err {
-		return 0, err
+	if nil != err1 {
+		return 0, err1
+	} else {
+		newFollowerCount := int64(len(ids))
+		err2 := config.DB.Model(&model.User{}).
+			Where("id = ?", userId).
+			Update("follower_count", newFollowerCount).Error
+		log.Println("更新数据库成功")
+		return newFollowerCount, err2
 	}
-
-	return int64(len(ids)), err
 }
 
 // GetFollowing 获取用户关注列表
