@@ -50,20 +50,20 @@ func (*CommentDao) InsertComment(videoID, userID int64, content string) (model.C
 	return comment, nil
 }
 
-// DeleteComment 删除评论
-func (*CommentDao) DeleteComment(commentID int64) error {
+// DeleteComment 删除评论（根据评论ID）
+func (*CommentDao) DeleteComment(commentID int64, userID int64) error {
 	log.Println("CommentDao-DeleteComment: running")
 
 	// 查询评论信息，检查是否存在且为有效评论
 	var commentInfo model.Comment
-	result := config.DB.Model(&model.Comment{}).Where("id = ? AND status = ?", commentID, 1).First(&commentInfo)
+	result := config.DB.Model(&model.Comment{}).Where("id = ? AND user_id = ? AND status = ?", commentID, userID, 1).First(&commentInfo)
 	if result.RowsAffected == 0 {
 		log.Println("CommentDao-DeleteComment: comment does not exist")
 		return errors.New("comment does not exist")
 	}
 
 	// 将评论状态更新为无效
-	err := config.DB.Model(&model.Comment{}).Where("id = ?", commentID).Update("status", 0).Error
+	err := config.DB.Model(&model.Comment{}).Where("id = ? AND user_id = ?", commentID, userID).Update("status", 0).Error
 	if err != nil {
 		log.Println("CommentDao-DeleteComment: delete comment failed")
 		return err

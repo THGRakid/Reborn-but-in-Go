@@ -7,7 +7,6 @@ import (
 	userService "Reborn-but-in-Go/user/service"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"log"
 	"net/http"
 	"strconv"
 )
@@ -57,85 +56,89 @@ func (controller *CommentController) HandleCommentAction(c *gin.Context) {
 	middleware.AuthMiddleware()(c)
 	isAuthenticated, _ := c.Get("is_authenticated")
 	fmt.Println("验证token获得的信息：", isAuthenticated)
-	// token 验证失败
-	if !isAuthenticated.(bool) {
-		log.Println("token 验证失败")
-		return
-	}
-	// token 验证通过，可以继续处理
-	// 根据Token获取userId
-	userIDInterface, _ := c.Get("user_id")
-	userIdInt, ok := userIDInterface.(int)
-	if !ok {
-		// 类型转换失败
-		// 这里你可以处理转换失败的情况，例如返回错误信息
-		fmt.Println("Error: Failed to convert user_id to int")
-		c.JSON(http.StatusInternalServerError, gin.H{"status_code": 2, "status_msg": "Failed to convert user_id to int"})
-		return
-	}
-	userId := int64(userIdInt)
+	if isAuthenticated.(bool) {
 
-	// 从前端接受请求参数
-	strVideoId := c.Query("video_id")
-	videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
-	strActionType := c.Query("action_type")
-	actionType, _ := strconv.Atoi(strActionType)
+		// token 验证通过，可以继续处理
+		// 根据Token获取userId
+		userIDInterface, _ := c.Get("user_id")
+		userIdInt, ok := userIDInterface.(int)
+		if !ok {
+			// 类型转换失败
+			// 这里你可以处理转换失败的情况，例如返回错误信息
+			fmt.Println("Error: Failed to convert user_id to int")
+			c.JSON(http.StatusInternalServerError, gin.H{"status_code": 2, "status_msg": "Failed to convert user_id to int"})
+			return
+		}
+		userId := int64(userIdInt)
 
-	// 获取用户信息
-	userResponse, err := controller.userService.GetUserByID(userId)
-	if err != nil {
-		// 处理获取用户信息失败的情况
-		c.JSON(http.StatusInternalServerError, gin.H{"status_code": 5, "status_msg": "Failed to get user information"})
-		return
-	}
+		// 从前端接受请求参数
+		strVideoId := c.Query("video_id")
+		videoId, _ := strconv.ParseInt(strVideoId, 10, 64)
+		strActionType := c.Query("action_type")
+		actionType, _ := strconv.Atoi(strActionType)
 
-	switch actionType {
-	case 1:
-		commentText := c.DefaultQuery("comment_text", "") // 获取评论内容
-
-		// 调用 CommentService 中的 CreateComment 方法发表评论
-		newComment, err := controller.commentService.CreateComment(videoId, userId, commentText)
+		// 获取用户信息
+		userResponse, err := controller.userService.GetUserByID(userId)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, CommentResponse{
-				StatusCode: 1, // 设置适当的错误状态码
-				StatusMsg:  "Failed to create comment",
-			})
+			// 处理获取用户信息失败的情况
+			c.JSON(http.StatusInternalServerError, gin.H{"status_code": 5, "status_msg": "Failed to get user information"})
 			return
 		}
 
-		// 返回新创建的评论
-		c.JSON(http.StatusOK, CommentResponse{
-			StatusCode: 0,
-			Comment: Comment{
-				ID: newComment.UserId,
-				User: User{
-					ID:   userResponse.User.Id,   // 使用评论的用户ID
-					Name: userResponse.User.Name, // 使用从 userService 获取的用户名
+		switch actionType {
+		case 1:
+			commentText := c.DefaultQuery("comment_text", "") // 获取评论内容
+
+			// 调用 CommentService 中的 CreateComment 方法发表评论
+			newComment, err := controller.commentService.CreateComment(videoId, userId, commentText)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, CommentResponse{
+					StatusCode: 1, // 设置适当的错误状态码
+					StatusMsg:  "Failed to create comment",
+				})
+				return
+			}
+
+			// 返回新创建的评论
+			c.JSON(http.StatusOK, CommentResponse{
+				StatusCode: 0,
+				Comment: Comment{
+					ID: newComment.UserId,
+					User: User{
+						ID:   userResponse.User.Id,   // 使用评论的用户ID
+						Name: userResponse.User.Name, // 使用从 userService 获取的用户名
+					},
+					Content:    newComment.Content,
+					CreateDate: newComment.CreateAt.Format("01-02-2006"), // 格式化创建日期为 mm-dd 格式
 				},
-				Content:    newComment.Content,
-				CreateDate: newComment.CreateAt.Format("01-02-2006"), // 格式化创建日期为 mm-dd 格式
-			},
+			})
+		case 2:
+			// 从请求参数中获取评论ID
+			commentIDStr := c.Param("comment_id")
+			commentID, err := strconv.ParseInt(commentIDStr, 10, 64)
+			if err != nil {
+				// 处理评论ID无效的情况
+				c.JSON(http.StatusBadRequest, gin.H{"status_code": 3, "status_msg": "Invalid comment ID"})
+				return
+			}
+
+			// 调用 CommentService 中的 DeleteComment 方法删除评论
+			err = controller.commentService.DeleteComment(commentID, userId)
+			if err != nil {
+				c.JSON(http.StatusInternalServerError, gin.H{"status_code": 4, "status_msg": "Failed to delete comment"})
+				return
+			}
+
+			// 返回成功删除评论的响应
+			c.JSON(http.StatusOK, gin.H{"status_code": 0, "status_msg": "Comment deleted successfully"})
+		}
+	} else {
+		// Token 验证未通过，返回登录页面
+		c.JSON(http.StatusOK, &model.UserResponse{
+			Response: model.Response{StatusCode: 1, StatusMsg: "Token authentication failed"},
 		})
-	case 2:
-		// 从请求参数中获取评论ID
-		commentIDStr := c.Param("comment_id")
-		commentID, err := strconv.ParseInt(commentIDStr, 10, 64)
-		if err != nil {
-			// 处理评论ID无效的情况
-			c.JSON(http.StatusBadRequest, gin.H{"status_code": 3, "status_msg": "Invalid comment ID"})
-			return
-		}
-
-		// 调用 CommentService 中的 DeleteComment 方法删除评论
-		err = controller.commentService.DeleteComment(commentID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"status_code": 4, "status_msg": "Failed to delete comment"})
-			return
-		}
-
-		// 返回成功删除评论的响应
-		c.JSON(http.StatusOK, gin.H{"status_code": 0, "status_msg": "Comment deleted successfully"})
 	}
+
 }
 
 // GetCommentList 修改 GetCommentList 函数，获取评论列表时关联用户信息
