@@ -121,7 +121,7 @@ func (*FavoriteDao) GetFavoriteInfo(userId int64, videoId int64) (model.Favorite
 }
 
 // GetFavoriteVideoIdList 根据userId查询所属点赞全部videoId
-func (*FavoriteDao) GetFavoriteVideoIdList(userId int64) ([]int64, error) {
+func GetFavoriteVideoIdList(userId int64) ([]int64, error) {
 	var FavoriteVideoIdList []int64
 	err := config.DB.Model(model.Favorite{}).Where(map[string]interface{}{"user_id": userId, "status": 1}).
 		Pluck("video_id", &FavoriteVideoIdList).Error
