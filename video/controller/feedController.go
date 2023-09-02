@@ -14,9 +14,9 @@ import (
 
 type feedController struct {
 	VideoService    *service.VideoService
-	FollowService   *followService.FollowService
 	FavoriteService *favoriteService.FavoriteService
 	UserDao         *userDao.UserDao
+	followService.FollowService
 }
 
 // NewFeedController 创建一个新的 FeedController 实例
@@ -111,9 +111,9 @@ func (controller *feedController) Feed(c *gin.Context) {
 					fmt.Println("Error: Failed to convert user_id to int")
 				}
 				userId := int64(userIdInt)
-				uid1 := userId                                          //用户id
-				uid2 := v.UserId                                        //视频发布者id
-				isFollow, err1 := followService.IsFollowing(uid1, uid2) //传入两个userId，检查是否关注
+				uid1 := userId                                       //用户id
+				uid2 := v.UserId                                     //视频发布者id
+				isFollow, err1 := controller.IsFollowing(uid1, uid2) //传入两个userId，检查是否关注
 
 				if err1 != nil {
 					fmt.Println(err1)

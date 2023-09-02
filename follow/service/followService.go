@@ -25,7 +25,7 @@ func NewFollowService(followDao *dao.FollowDao) *FollowService {
 }
 
 // IsFollowing 根据当前用户id和目标用户id来判断当前用户是否关注了目标用户
-func IsFollowing(userId int64, targetId int64) (bool, error) {
+func (*FollowService) IsFollowing(userId int64, targetId int64) (bool, error) {
 	// SQL中查询
 	relation, err := dao.NewFollowDaoInstance().FindRelation(userId, targetId)
 
@@ -84,13 +84,17 @@ func (f *FollowService) GetFollowing(targetID int64) ([]model.User, error) {
 		return nil, err
 	} else {
 		// 查询成功，followedUsers 包含了目标用户关注的对象的信息
-		fmt.Println("目标用户关注的对象信息:", followedUsers)
+		for i := range followedUsers {
+			result, _ := f.IsFollowing(targetID, followedUsers[i].Id)
+			followedUsers[i].IsFollow = result
+		}
+		//fmt.Println("目标用户关注的对象信息:", followedUsers)
 		return followedUsers, nil
 	}
 }
 
 // GetFollowers 获取用户粉丝列表
-func (*FollowService) GetFollowers(targetID int64) ([]model.User, error) {
+func (f *FollowService) GetFollowers(targetID int64) ([]model.User, error) {
 	// 查询粉丝的信息
 	var followers []model.User
 	if err := config.DB.Table("users").
@@ -102,8 +106,12 @@ func (*FollowService) GetFollowers(targetID int64) ([]model.User, error) {
 		fmt.Println("查询粉丝信息时发生错误:", err)
 		return nil, err
 	} else {
-		// 查询成功，followers 包含了目标用户粉丝的信息
-		fmt.Println("目标用户粉丝信息:", followers)
+		// 查询成功，followedUsers 包含了目标用户关注的对象的信息
+		for i := range followers {
+			result, _ := f.IsFollowing(targetID, followers[i].Id)
+			followers[i].IsFollow = result
+		}
+		//fmt.Println("目标用户粉丝信息:", followers)
 		return followers, nil
 	}
 }
