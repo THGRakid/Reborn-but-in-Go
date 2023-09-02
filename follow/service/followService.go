@@ -5,7 +5,6 @@ import (
 	"Reborn-but-in-Go/follow/dao"
 	"Reborn-but-in-Go/user/model"
 	"fmt"
-	"log"
 )
 
 //	// AddFollowRelation 当前用户关注目标用户
@@ -61,52 +60,39 @@ func (*FollowService) GetFollowerNum(userId int64) (int64, error) {
 }
 
 // GetFollowing 获取用户关注列表
-func (f *FollowService) GetFollowing(userId int64) ([]model.User, error) {
-	users := make([]model.User, 1)
-	// 查询出错。
-	if err := config.DB.Raw("select id,`name`,"+
-		"\ncount(if(tag = 'follower' and status is not null,1,null)) follower_count,"+
-		"\ncount(if(tag = 'follow' and status is not null,1,null)) follow_count,"+
-		"\n 'true' is_follow\nfrom\n("+
-		"\nselect f1.follower_id fid,u.id,`name`,f2.status,'follower' tag"+
-		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.status = 0"+
-		"\nleft join follows f2 on u.id = f2.user_id and f2.status = 0\n\tunion all"+
-		"\nselect f1.follower_id fid,u.id,`name`,f2.status,'follow' tag"+
-		"\nfrom follows f1 join users u on f1.user_id = u.id and f1.status = 0"+
-		"\nleft join follows f2 on u.id = f2.follower_id and f2.status = 0\n) T"+
-		"\nwhere fid = ? group by fid,id,`name`", userId).Scan(&users).Error; nil != err {
+func (f *FollowService) GetFollowing(targetID int64) ([]model.User, error) {
+	// 查询关注的对象的信息
+	var followedUsers []model.User
+	if err := config.DB.Table("users").
+		Joins("INNER JOIN follows ON users.id = follows.follower_id").
+		Where("follows.user_id = ? AND follows.status = 0", targetID).
+		Select("users.id, users.name, users.follow_count, users.follower_count").
+		Find(&followedUsers).Error; err != nil {
+		// 处理查询错误
+		fmt.Println("查询关注的对象信息时发生错误:", err)
 		return nil, err
+	} else {
+		// 查询成功，followedUsers 包含了目标用户关注的对象的信息
+		fmt.Println("目标用户关注的对象信息:", followedUsers)
+		return followedUsers, nil
 	}
-	// 查询成功
-	fmt.Println("关注列表: ", users)
-	log.Println("用户关注列表查询正确")
-	return users, nil
 }
 
 // GetFollowers 获取用户粉丝列表
-func (*FollowService) GetFollowers(userId int64) ([]model.User, error) {
-	users := make([]model.User, 1)
-	if err := config.DB.Raw("\nselect T.id, T.name, T.follow_cnt follow_count, T.follower_cnt follower_count, if(f.status is null, 'false', 'true') is_follow"+
-		"\nfrom follows f right join"+
-		"\n(select fid,id,`name`,"+
-		"\ncount(if(tag = 'follower' and status is not null, 1, null)) follower_cnt,"+
-		"\ncount(if(tag = 'follow' and status is not null, 1, null)) follow_cnt"+
-		"\nfrom("+
-		"\nselect f1.user_id fid, u.id, `name`, f2.status, 'follower' tag"+
-		"\nfrom follows f1 join users u on f1.follower_id = u.id and f1.status = 0"+
-		"\nleft join follows f2 on u.id = f2.user_id and f2.status = 0"+
-		"\nunion all"+
-		"\nselect f1.user_id fid,u.id, `name`, f2.status,'follow' tag"+
-		"\nfrom follows f1 join users u on f1.follower_id = u.id and f1.status = 0"+
-		"\nleft join follows f2 on u.id = f2.follower_id and f2.status = 0"+
-		"\n) T group by fid, id, `name`"+
-		"\n) T on f.user_id = T.id and f.follower_id = T.fid and f.status = 0 where fid = ?", userId).
-		Scan(&users).Error; nil != err {
-		log.Println("用户粉丝列表查询错误")
+func (*FollowService) GetFollowers(targetID int64) ([]model.User, error) {
+	// 查询粉丝的信息
+	var followers []model.User
+	if err := config.DB.Table("users").
+		Joins("INNER JOIN follows ON users.id = follows.user_id").
+		Where("follows.follower_id = ? AND follows.status = 0", targetID).
+		Select("users.id, users.name, users.follow_count, users.follower_count").
+		Find(&followers).Error; err != nil {
+		// 处理查询错误
+		fmt.Println("查询粉丝信息时发生错误:", err)
 		return nil, err
+	} else {
+		// 查询成功，followers 包含了目标用户粉丝的信息
+		fmt.Println("目标用户粉丝信息:", followers)
+		return followers, nil
 	}
-	// 查询成功
-	fmt.Println("粉丝列表: ", users)
-	log.Println("用户粉丝列表查询正确")
-	return users, nil
 }
