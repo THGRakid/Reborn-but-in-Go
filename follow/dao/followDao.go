@@ -161,7 +161,7 @@ func (*FollowDao) GetFollowingIds(userId int64) ([]int64, error) {
 	var ids []int64
 	if err := config.DB.
 		Model(model.Follow{}).
-		Where("follower_id = ?", userId).
+		Where("follower_id = ? AND status = 0", userId).
 		Pluck("user_id", &ids).Error; nil != err {
 		// 没有关注任何人，但是不能算错。
 		if "record not found" == err.Error() {
@@ -180,7 +180,7 @@ func (*FollowDao) GetFollowersIds(userId int64) ([]int64, error) {
 	var ids []int64
 	if err := config.DB.
 		Model(model.Follow{}).
-		Where("user_id = ?", userId).
+		Where("user_id = ? AND status = 0", userId).
 		Pluck("follower_id", &ids).Error; nil != err {
 		// 没有粉丝，但是不能算错。
 		if "record not found" == err.Error() {

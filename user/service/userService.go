@@ -1,13 +1,16 @@
 package service
 
 import (
+	followService "Reborn-but-in-Go/follow/service"
 	"Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/user/model"
+	"fmt"
 )
 
 // UserService 服务层
 type UserService struct {
 	UserDao *dao.UserDao
+	followService.FollowService
 	//RedisClient *redis.Client
 }
 
@@ -86,10 +89,18 @@ func (s *UserService) UserLogin(username string, password string) (*model.LoginR
 // GetUserByID 根据用户ID和Token返回用户User列表
 func (s *UserService) GetUserByID(userId int64) (*model.UserResponse, error) {
 	user, _ := s.UserDao.GetUserByID(userId)
+	result, _ := s.IsFollowing(userId, user.Id)
+	user.IsFollow = result
+	user.FollowCount, _ = s.GetFollowingNum(userId)
+	user.FollowerCount, _ = s.GetFollowerNum(userId)
+
 	userResponse := &model.UserResponse{
 		Response: model.Response{StatusCode: 0},
 		User:     user,
 	}
+
+	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1111")
+	fmt.Println(user)
 
 	return userResponse, nil
 }
