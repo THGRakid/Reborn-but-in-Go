@@ -109,7 +109,7 @@ func (*FollowDao) FindRelation(userId int64, targetId int64) (*model.Follow, err
 	//当查询出现错误时，日志打印err msg，并return err.
 	if err := config.DB.Model(model.Follow{}).
 		Where("user_id = ?", targetId).
-		Where("follower_ID = ?", userId).
+		Where("follower_id = ?", userId).
 		Take(&follow).Error; nil != err {
 		// 当没查到数据时，gorm也会报错。
 		if "record not found" == err.Error() {
