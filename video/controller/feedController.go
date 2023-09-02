@@ -10,7 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
-	"time"
 )
 
 type feedController struct {
@@ -66,18 +65,10 @@ type FeedUser struct {
 }
 
 func (controller *feedController) Feed(c *gin.Context) {
-	//s, e := CreateToken(userId, userName)
-	//if e != nil {
-	//	fmt.Printf("%s", e)
-	//}
-	//fmt.Println(s)
-	strToken := c.Query("token")
-	var haveToken bool
-	if strToken == "" {
-		haveToken = false
-	} else {
-		haveToken = true
-	}
+
+	middleware.AuthMiddleware()(c)
+	//验证Token
+	isAuthenticated, _ := c.Get("is_authenticated")
 	var strLastTime = c.Query("latest_time")
 	lastTime, err := strconv.ParseInt(strLastTime, 10, 32)
 	if err != nil {
@@ -108,16 +99,19 @@ func (controller *feedController) Feed(c *gin.Context) {
 			feedUser.TotalFavorited = user.TotalFavorited
 			feedUser.FavoriteCount = user.FavoriteCount
 			feedUser.IsFollow = false
-			if haveToken {
-				// 查询是否关注
-				tokenStruct, ok := middleware.CheckToken(strToken)    //中间件校验Token
-				if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-					uid1 := tokenStruct.UserId                                      //用户id
-					uid2 := v.UserId                                                //视频发布者id
-					isFollow, _ := controller.FollowService.IsFollowing(uid1, uid2) //传入两个userId，检查是否关注
-					if isFollow {
-						feedUser.IsFollow = true
-					}
+
+			//查询是否关注
+			if isAuthenticated.(bool) {
+				// token 验证通过，可以继续处理
+				// 获取userId
+				userIdString := c.Query("user_id")
+				userId, _ := strconv.Atoi(userIdString)
+				uid1 := int64(userId) //用户id
+				uid2 := v.UserId      //视频发布者id
+				fmt.Println("feed层获取到的视频发布者ID：", v.Id)
+				isFollow, _ := controller.FollowService.IsFollowing(uid1, uid2) //传入两个userId，检查是否关注
+				if isFollow {
+					feedUser.IsFollow = true
 				}
 			}
 		}
@@ -126,18 +120,20 @@ func (controller *feedController) Feed(c *gin.Context) {
 		tmp.CoverPath = v.CoverPath
 		tmp.FavoriteCount = v.FavoriteCount
 		tmp.IsFavorite = false
-		if haveToken {
-			//查询是否点赞过
-			tokenStruct, ok := middleware.CheckToken(strToken)
-			if ok && time.Now().Unix() <= tokenStruct.ExpiresAt { //token合法
-				uid := tokenStruct.UserId                                        //用户id
-				vid := v.Id                                                      // 视频id
-				isFavorite, _ := controller.FavoriteService.IsFavorite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
-				if isFavorite {                                                  //有点赞记录
-					tmp.IsFavorite = true
-				}
+		//查询是否点赞过
+		if isAuthenticated.(bool) {
+			// token 验证通过，可以继续处理
+			// 获取userId
+			userIdString := c.Query("user_id")
+			userId, _ := strconv.Atoi(userIdString)
+			uid := int64(userId)                                             //用户id
+			vid := v.Id                                                      // 视频id
+			isFavorite, _ := controller.FavoriteService.IsFavorite(vid, uid) //点赞，传入视频Id和userId，检查该用户是否点赞了此视频
+			if isFavorite {                                                  //有点赞记录
+				tmp.IsFavorite = true
 			}
 		}
+
 		tmp.Title = v.Title
 		feedVideoList = append(feedVideoList, tmp)
 		newTime = v.CreateAt.Unix()
