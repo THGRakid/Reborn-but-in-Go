@@ -3,7 +3,7 @@ package service
 import (
 	"Reborn-but-in-Go/comment/dao"
 	"Reborn-but-in-Go/comment/model"
-	"time"
+	"errors"
 )
 
 // CommentService 评论服务层
@@ -18,24 +18,15 @@ func NewCommentService(commentDao *dao.CommentDao) *CommentService {
 	}
 }
 
-// CountCommentsByVideoId 根据视频ID查询评论数量
-func (s *CommentService) CountCommentsByVideoId(videoId int64) (int64, error) {
-	return s.CommentDao.Count(videoId)
-}
-
-// GetCommentIdListByVideoId 根据视频ID获取评论ID列表
-func (s *CommentService) GetCommentIdListByVideoId(videoId int64) ([]int64, error) {
-	return s.CommentDao.CommentIdList(videoId)
-}
-
 // CreateComment 发表评论
-func (s *CommentService) CreateComment(comment model.Comment) (model.Comment, error) {
-	// 设置评论的默认属性
-	comment.CreateAt = time.Now()
-	comment.Status = 1 // 设置默认状态为有效
+func (s *CommentService) CreateComment(videoID, userID int64, content string) (model.Comment, error) {
+	// 检查评论内容是否为空
+	if content == "" {
+		return model.Comment{}, errors.New("评论内容不能为空")
+	}
 
 	// 调用 CommentDao 的 InsertComment 方法插入评论
-	newComment, err := s.CommentDao.InsertComment(comment)
+	newComment, err := s.CommentDao.InsertComment(videoID, userID, content)
 	if err != nil {
 		return model.Comment{}, err
 	}
@@ -44,16 +35,16 @@ func (s *CommentService) CreateComment(comment model.Comment) (model.Comment, er
 }
 
 // DeleteComment 删除评论
-func (s *CommentService) DeleteComment(commentId int64) error {
+func (s *CommentService) DeleteComment(commentID int64) error {
 	// 调用 CommentDao 的 DeleteComment 方法删除评论
-	err := s.CommentDao.DeleteComment(commentId)
+	err := s.CommentDao.DeleteComment(commentID)
 	return err
 }
 
 // GetCommentListByVideoId 根据视频ID查询评论列表
-func (s *CommentService) GetCommentListByVideoId(videoId int64) ([]model.Comment, error) {
+func (s *CommentService) GetCommentListByVideoId(videoID int64) ([]model.Comment, error) {
 	// 调用 CommentDao 的 GetCommentList 方法获取评论列表
-	commentList, err := s.CommentDao.GetCommentList(videoId)
+	commentList, err := s.CommentDao.GetCommentList(videoID)
 	if err != nil {
 		return nil, err
 	}
