@@ -35,9 +35,9 @@ func (s *CommentService) CreateComment(videoID, userID int64, content string) (m
 }
 
 // DeleteComment 删除评论
-func (s *CommentService) DeleteComment(commentID, usrId int64) error {
+func (s *CommentService) DeleteComment(videoID, commentID int64) error {
 	// 调用 CommentDao 的 DeleteComment 方法删除评论
-	err := s.CommentDao.DeleteComment(commentID, usrId)
+	err := s.CommentDao.DeleteComment(videoID, commentID)
 	return err
 }
 

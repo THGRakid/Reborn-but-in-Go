@@ -103,7 +103,7 @@ func (controller *CommentController) HandleCommentAction(c *gin.Context) {
 			c.JSON(http.StatusOK, CommentResponse{
 				StatusCode: 0,
 				Comment: Comment{
-					ID: newComment.UserId,
+					ID: newComment.CommentId,
 					User: User{
 						ID:   userResponse.User.Id,   // 使用评论的用户ID
 						Name: userResponse.User.Name, // 使用从 userService 获取的用户名
@@ -114,7 +114,7 @@ func (controller *CommentController) HandleCommentAction(c *gin.Context) {
 			})
 		case 2:
 			// 从请求参数中获取评论ID
-			commentIDStr := c.Param("comment_id")
+			commentIDStr := c.Query("comment_id")
 			commentID, err := strconv.ParseInt(commentIDStr, 10, 64)
 			if err != nil {
 				// 处理评论ID无效的情况
@@ -123,7 +123,7 @@ func (controller *CommentController) HandleCommentAction(c *gin.Context) {
 			}
 
 			// 调用 CommentService 中的 DeleteComment 方法删除评论
-			err = controller.commentService.DeleteComment(commentID, userId)
+			err = controller.commentService.DeleteComment(videoId, commentID)
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"status_code": 4, "status_msg": "Failed to delete comment"})
 				return
@@ -183,7 +183,7 @@ func (controller *CommentController) GetCommentList(c *gin.Context) {
 
 			// 创建包含用户信息的评论
 			commentWithUser := Comment{
-				ID: comment.UserId,
+				ID: comment.CommentId,
 				User: User{
 					ID:   userResponse.User.Id,
 					Name: userResponse.User.Name,
