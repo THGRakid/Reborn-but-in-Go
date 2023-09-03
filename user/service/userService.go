@@ -5,6 +5,7 @@ import (
 	followService "Reborn-but-in-Go/follow/service"
 	"Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/user/model"
+	videoDao "Reborn-but-in-Go/video/dao"
 	"fmt"
 )
 
@@ -13,6 +14,7 @@ type UserService struct {
 	UserDao *dao.UserDao
 	followService.FollowService
 	favoriteService.FavoriteService
+	videoDao.VideoDao
 	//RedisClient *redis.Client
 }
 
@@ -97,7 +99,7 @@ func (s *UserService) GetUserByID(userId int64) (*model.UserResponse, error) {
 	user.FollowCount, _ = s.GetFollowingNum(userId)
 	user.FollowerCount, _ = s.GetFollowerNum(userId)
 	user.FavoriteCount, _ = s.GetTotalFavoriteVideoCount(userId)
-
+	user.WorkCount, _ = s.VideoDao.GetPublishCount(userId)
 	userResponse := &model.UserResponse{
 		Response: model.Response{StatusCode: 0},
 		User:     user,
