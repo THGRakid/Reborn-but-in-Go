@@ -102,8 +102,6 @@ func (s *UserService) GetUserByID(userId int64) (*model.UserResponse, error) {
 		Response: model.Response{StatusCode: 0},
 		User:     user,
 	}
-
-	fmt.Println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!1111")
 	fmt.Println(user)
 
 	return userResponse, nil
