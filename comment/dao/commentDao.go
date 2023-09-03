@@ -3,7 +3,9 @@ package dao
 import (
 	"Reborn-but-in-Go/comment/model"
 	"Reborn-but-in-Go/config"
+	vidMod "Reborn-but-in-Go/video/model"
 	"errors"
+	"gorm.io/gorm"
 	"log"
 	"sync"
 	"time"
@@ -23,20 +25,13 @@ var commentOnce sync.Once
 func NewCommentDaoInstance() *CommentDao {
 	commentOnce.Do(func() {
 		commentDao = &CommentDao{}
+		err := config.DB.Migrator().CreateIndex(&model.Comment{}, "video_id")
+		if err != nil {
+			return
+		}
 	})
 	return commentDao
 }
-
-/*// GetCommentCount 根据videoId查询video表中的comment_count字段
-func GetCommentCount(videoId int64) (int64, error) {
-	var video vidMod.Video
-	err := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"id": videoId}).First(&video).Error
-	if err != nil {
-		log.Println(err.Error())
-		return 0, errors.New("get video comment_count failed")
-	}
-	return video.CommentCount, nil
-}*/
 
 // InsertComment 插入评论
 func (*CommentDao) InsertComment(videoID, userID int64, content string) (model.Comment, error) {
@@ -51,13 +46,27 @@ func (*CommentDao) InsertComment(videoID, userID int64, content string) (model.C
 		CreateAt: time.Now(),
 	}
 
+	// 开始事务
+	tx := config.DB.Begin()
+
 	// 向数据库插入一条评论信息
-	err := config.DB.Model(&model.Comment{}).Create(&comment).Error
+	err := tx.Create(&comment).Error
 	if err != nil {
-		log.Println("CommentDao-InsertComment: create comment failed")
+		tx.Rollback() // 回滚事务
 		return model.Comment{}, err
 	}
-	log.Println("CommentDao-InsertComment: create comment success")
+
+	// 增加视频评论数量
+	ver := tx.Model(vidMod.Video{}).Where(map[string]interface{}{"id": videoID}).
+		Update("comment_count", gorm.Expr("comment_count + ?", 1)).Error
+	if ver != nil {
+		tx.Rollback() // 回滚事务
+		return model.Comment{}, err
+	}
+
+	// 提交事务
+	tx.Commit()
+
 	return comment, nil
 }
 
@@ -73,13 +82,27 @@ func (*CommentDao) DeleteComment(videoID, commentID int64) error {
 		return errors.New("comment does not exist")
 	}
 
+	// 开始事务
+	tx := config.DB.Begin()
+
 	// 将评论状态更新为无效
-	err := config.DB.Model(&model.Comment{}).Where("video_id = ? AND comment_id = ? ", videoID, commentID).Update("status", 0).Error
+	err := tx.Model(&model.Comment{}).Where("video_id = ? AND comment_id = ? ", videoID, commentID).Update("status", 0).Error
 	if err != nil {
-		log.Println("CommentDao-DeleteComment: delete comment failed")
+		tx.Rollback() // 回滚事务
 		return err
 	}
-	log.Println("CommentDao-DeleteComment: delete comment success")
+
+	// 减少视频评论数量
+	ver := tx.Model(vidMod.Video{}).Where(map[string]interface{}{"id": videoID}).
+		Update("comment_count", gorm.Expr("comment_count - ?", 1)).Error
+	if ver != nil {
+		tx.Rollback() // 回滚事务
+		return err
+	}
+
+	// 提交事务
+	tx.Commit()
+
 	return nil
 }
 
