@@ -48,6 +48,17 @@ func (*FavoriteDao) GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 	return FavoriteUserIdList, nil
 }
 
+// 根据videoId查询video表中的favorite_count字段
+func GetFavoriteCount(videoId int64) (int64, error) {
+	var video vidMod.Video
+	err := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"id": videoId}).First(&video).Error
+	if err != nil {
+		log.Println(err.Error())
+		return 0, errors.New("get video favorite_count failed")
+	}
+	return video.FavoriteCount, nil
+}
+
 // InsertFavorite 插入点赞数据
 func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 	// 创建点赞数据，默认为点赞，status为1

@@ -58,7 +58,7 @@ func (fs *FavoriteService) FavoriteCount(videoId int64) (int64, error) {
 
 // GetTotalFavoriteCount 根据userId获取这个用户总共被点赞数量(获赞数)
 /*
-	该函数存疑
+	待检测
 */
 func (fs *FavoriteService) GetTotalFavoriteCount(userId int64) (int64, error) {
 	videoIdList, err := vidDao.NewVideoDaoInstance().GetVideoListByUserId(userId)
@@ -69,7 +69,7 @@ func (fs *FavoriteService) GetTotalFavoriteCount(userId int64) (int64, error) {
 	var sum int64 // 该用户的总被点赞数
 
 	for _, video := range videoIdList {
-		count, err := fs.FavoriteCount(video.Id) // 修改这里
+		count, err := dao.GetFavoriteCount(video.Id) // 调用 GetFavoriteCount 函数获取 favorite_count
 		if err != nil {
 			log.Printf(err.Error())
 			return 0, err
@@ -78,6 +78,7 @@ func (fs *FavoriteService) GetTotalFavoriteCount(userId int64) (int64, error) {
 	}
 
 	return sum, nil
+
 }
 
 // GetTotalFavoriteVideoCount 根据userId获取这个用户点赞视频数量
