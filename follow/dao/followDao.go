@@ -28,17 +28,11 @@ func NewFollowDaoInstance() *FollowDao {
 	return followDao
 }
 
-// 以下为follow层相关方法
-
 // InsertFollowRelation 给定用户和关注对象id，建立其关系
 func (*FollowDao) InsertFollowRelation(userId int64, targetId int64) (bool, error) {
-
-	fmt.Printf("查询条件：user_id=%d, follower_id=%d\n", userId, targetId)
-
+	// 相关信息预处理
 	currentTime := time.Now()
-
 	var existingFollow model.Follow
-
 	// 尝试查询是否已经存在关注信息
 	if err := config.DB.Where("user_id = ? AND follower_id = ?", userId, targetId).
 		First(&existingFollow).Error; err != nil {
@@ -60,9 +54,7 @@ func (*FollowDao) InsertFollowRelation(userId int64, targetId int64) (bool, erro
 		}
 	} else {
 		// 如果存在关注信息，更新状态和时间
-		if existingFollow.Status == 1 {
-			existingFollow.Status = 0
-		}
+		existingFollow.Status = 0
 		existingFollow.CreateAt = currentTime
 		config.DB.Save(&existingFollow)
 		log.Println("重新关注成功")
@@ -77,11 +69,10 @@ func (*FollowDao) DeleteFollowRelation(userId int64, targetId int64) (bool, erro
 		"Status":   1,          // 更新状态为1
 		"CreateAt": time.Now(), // 更新创建时间为当前时间
 	}
-	result := config.DB.Model(&model.Follow{}).
+	// 具体取关操作
+	if err := config.DB.Model(&model.Follow{}).
 		Where("user_id = ? AND follower_id = ?", userId, targetId).
-		Updates(updateData)
-
-	if result.Error != nil {
+		Updates(updateData).Error; err != nil {
 		// 更新失败
 		log.Println("取关失败")
 		return false, nil
@@ -90,16 +81,6 @@ func (*FollowDao) DeleteFollowRelation(userId int64, targetId int64) (bool, erro
 		log.Println("取关成功")
 		return true, nil
 	}
-	//// 更新失败，返回错误。
-	//if err := config.DB.Model(&model.Follow{}).
-	//	Where("user_id = ? AND follower_id = ?", userId, targetId).
-	//	Update(updateData).Error; nil != err {
-	//	// 更新失败，打印错误日志。
-	//	log.Println(err.Error())
-	//	return false, err
-	//}
-	//// 更新成功。
-	//return true, nil
 }
 
 // FindRelation 给定当前用户和目标用户id，查询follow表中相应的记录。
@@ -123,37 +104,6 @@ func (*FollowDao) FindRelation(userId int64, targetId int64) (*model.Follow, err
 		fmt.Println("当前用户已关注目标用户")
 		return &follow, nil
 	}
-}
-
-// GetFollowerNum 给定当前用户id，查询follow表中该用户的粉丝数。
-func (*FollowDao) GetFollowerNum(userId int64) (int64, error) {
-	// 用于存储当前用户粉丝数的变量
-	var num int64
-	// 当查询出现错误的情况，日志打印err msg，并返回err.
-	if err := config.DB.
-		Model(model.Follow{}).
-		Where("user_id = ?", userId).
-		Count(&num).Error; nil != err {
-		log.Println(err.Error())
-		return 0, err
-	}
-	// 正常情况，返回取到的粉丝数。
-	return num, nil
-}
-
-// GetFollowingCnt 给定当前用户id，查询follow表中该用户关注了人数。
-func (*FollowDao) GetFollowingCnt(userId int64) (int64, error) {
-	// 用于存储当前用户关注了多少人。
-	var cnt int64
-	// 查询出错，日志打印err msg，并return err
-	if err := config.DB.Model(model.Follow{}).
-		Where("follower_id = ?", userId).
-		Count(&cnt).Error; nil != err {
-		log.Println(err.Error())
-		return 0, err
-	}
-	// 查询成功，返回人数。
-	return cnt, nil
 }
 
 // GetFollowingIds 给定用户id，查询他关注的人的id。

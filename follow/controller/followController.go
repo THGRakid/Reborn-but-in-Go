@@ -27,18 +27,18 @@ type Response struct {
 	StatusMsg  string `json:"status_msg,omitempty"`
 }
 
-// RelationActionResp 关注和取消关注需要返回结构。
+// RelationActionResp 关注和取消关注需要返回结构
 type RelationActionResp struct {
 	Response
 }
 
-// FollowingResp 关注列表相关部分，User传入预留
+// FollowingResp 关注列表相关部分
 type FollowingResp struct {
 	Response
 	UserList []model.User `json:"user_list,omitempty"`
 }
 
-// FollowersResp 粉丝列表相关部分，User传入预留
+// FollowersResp 粉丝列表相关部分
 type FollowersResp struct {
 	Response
 	UserList []model.User `json:"user_list,omitempty"`
@@ -61,14 +61,17 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 	if !err1 {
 		// 类型转换失败
 		fmt.Println("用户id格式错误")
-		c.JSON(http.StatusInternalServerError, gin.H{"status_code": 2, "status_msg": " Failed to convert user_id to int"})
+		c.JSON(http.StatusInternalServerError, RelationActionResp{
+			Response{
+				StatusCode: 2,
+				StatusMsg:  "用户id类型转换失败",
+			},
+		})
 		return
 	}
 	userId := int64(userIdInt)
 	toUserId, err2 := strconv.ParseInt(c.Query("to_user_id"), 10, 64)
 	actionType, err3 := strconv.ParseInt(c.Query("action_type"), 10, 64)
-
-	//fmt.Println(userId, toUserId, actionType)
 
 	// 传入参数格式有问题。
 	if nil != err2 || nil != err3 || actionType < 1 || actionType > 2 {
@@ -98,19 +101,17 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 	})
 }
 
-// GetFollowing 处理获取关注列表请求。
+// GetFollowing 处理获取关注列表的请求
 func (f *FollowController) GetFollowing(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
 
-	fmt.Println("userId 看这里", userId)
-
-	// 用户id解析出错。
+	// 用户id解析出错
 	if nil != err {
 		fmt.Println("用户id格式错误")
 		c.JSON(http.StatusOK, FollowingResp{
 			Response: Response{
 				StatusCode: -1,
-				StatusMsg:  "用户id格式错误。",
+				StatusMsg:  "用户id格式错误",
 			},
 			UserList: nil,
 		})
@@ -119,39 +120,41 @@ func (f *FollowController) GetFollowing(c *gin.Context) {
 	// 正常获取关注列表
 	users, err := f.FollowService.GetFollowing(userId)
 	if err != nil {
-		// 获取关注列表时出错。
+		// 获取关注列表时出错
 		fmt.Println("获取关注列表时出错")
 		c.JSON(http.StatusOK, FollowingResp{
 			Response: Response{
 				StatusCode: -1,
-				StatusMsg:  "获取关注列表时出错。",
+				StatusMsg:  "获取关注列表时出错",
 			},
 			UserList: nil,
 		})
 		return
 	} else {
-		// 获取关注列表成功。
-		log.Println("获取关注列表成功。")
+		// 获取关注列表成功
+		log.Println("获取关注列表成功")
 		c.JSON(http.StatusOK, FollowingResp{
 			UserList: users,
 			Response: Response{
 				StatusCode: 0,
-				StatusMsg:  "OK",
+				StatusMsg:  "获取关注列表成功",
 			},
 		})
 		return
 	}
 }
 
-// GetFollowers 处理获取关注列表请求
+// GetFollowers 处理获取粉丝列表的请求
 func (f *FollowController) GetFollowers(c *gin.Context) {
 	userId, err := strconv.ParseInt(c.Query("user_id"), 10, 64)
-	// 用户id解析出错。
+
+	// 用户id解析出错
 	if nil != err {
+		fmt.Println("用户id格式错误")
 		c.JSON(http.StatusOK, FollowersResp{
 			Response: Response{
 				StatusCode: -1,
-				StatusMsg:  "用户id格式错误。",
+				StatusMsg:  "用户id格式错误",
 			},
 			UserList: nil,
 		})
@@ -160,22 +163,23 @@ func (f *FollowController) GetFollowers(c *gin.Context) {
 	// 正常获取粉丝列表
 	users, err := f.FollowService.GetFollowers(userId)
 	if err != nil {
-		// 获取粉丝列表时出错。
+		// 获取粉丝列表时出错
+		fmt.Println("获取粉丝列表时出错")
 		c.JSON(http.StatusOK, FollowersResp{
 			Response: Response{
 				StatusCode: -1,
-				StatusMsg:  "获取粉丝列表时出错。",
+				StatusMsg:  "获取粉丝列表时出错",
 			},
 			UserList: nil,
 		})
 		return
 	} else {
-		// 获取粉丝列表成功。
-		log.Println("获取粉丝列表成功。")
+		// 获取粉丝列表成功
+		log.Println("获取粉丝列表成功")
 		c.JSON(http.StatusOK, FollowersResp{
 			Response: Response{
 				StatusCode: 0,
-				StatusMsg:  "OK",
+				StatusMsg:  "获取粉丝列表成功",
 			},
 			UserList: users,
 		})

@@ -5,7 +5,6 @@ import (
 	"Reborn-but-in-Go/follow/dao"
 	"Reborn-but-in-Go/user/model"
 	"fmt"
-	"log"
 )
 
 //	// AddFollowRelation 当前用户关注目标用户
@@ -18,6 +17,7 @@ type FollowService struct {
 	FollowDao *dao.FollowDao
 }
 
+// NewFollowService 创建一个新的 FollowService 实例
 func NewFollowService(followDao *dao.FollowDao) *FollowService {
 	return &FollowService{
 		FollowDao: followDao,
@@ -43,14 +43,14 @@ func (*FollowService) GetFollowingNum(userId int64) (int64, error) {
 
 	if nil != err1 {
 		return 0, err1
-	} else {
-		newFollowCount := int64(len(ids))
-		err2 := config.DB.Model(&model.User{}).
-			Where("id = ?", userId).
-			Update("follow_count", newFollowCount).Error
-		log.Println("更新数据库成功")
-		return newFollowCount, err2
 	}
+
+	// 更新User表
+	newFollowCount := int64(len(ids))
+	err2 := config.DB.Model(&model.User{}).
+		Where("id = ?", userId).
+		Update("follow_count", newFollowCount).Error
+	return newFollowCount, err2
 }
 
 // GetFollowerNum 根据用户id来查询该用户的粉丝数目
@@ -60,14 +60,14 @@ func (*FollowService) GetFollowerNum(userId int64) (int64, error) {
 
 	if nil != err1 {
 		return 0, err1
-	} else {
-		newFollowerCount := int64(len(ids))
-		err2 := config.DB.Model(&model.User{}).
-			Where("id = ?", userId).
-			Update("follower_count", newFollowerCount).Error
-		log.Println("更新数据库成功")
-		return newFollowerCount, err2
 	}
+
+	// 更新User表
+	newFollowerCount := int64(len(ids))
+	err2 := config.DB.Model(&model.User{}).
+		Where("id = ?", userId).
+		Update("follower_count", newFollowerCount).Error
+	return newFollowerCount, err2
 }
 
 // GetFollowing 获取用户关注列表
@@ -80,7 +80,7 @@ func (f *FollowService) GetFollowing(targetID int64) ([]model.User, error) {
 		Select("users.id, users.name, users.follow_count, users.follower_count").
 		Find(&followedUsers).Error; err != nil {
 		// 处理查询错误
-		fmt.Println("查询关注的对象信息时发生错误:", err)
+		fmt.Println("查询关注的对象信息时发生错误", err)
 		return nil, err
 	} else {
 		// 查询成功，followedUsers 包含了目标用户关注的对象的信息
@@ -88,7 +88,6 @@ func (f *FollowService) GetFollowing(targetID int64) ([]model.User, error) {
 			result, _ := f.IsFollowing(targetID, followedUsers[i].Id)
 			followedUsers[i].IsFollow = result
 		}
-		//fmt.Println("目标用户关注的对象信息:", followedUsers)
 		return followedUsers, nil
 	}
 }
@@ -103,7 +102,7 @@ func (f *FollowService) GetFollowers(targetID int64) ([]model.User, error) {
 		Select("users.id, users.name, users.follow_count, users.follower_count").
 		Find(&followers).Error; err != nil {
 		// 处理查询错误
-		fmt.Println("查询粉丝信息时发生错误:", err)
+		fmt.Println("查询粉丝信息时发生错误", err)
 		return nil, err
 	} else {
 		// 查询成功，followedUsers 包含了目标用户关注的对象的信息
