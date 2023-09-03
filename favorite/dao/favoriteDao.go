@@ -3,7 +3,9 @@ package dao
 import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/favorite/model"
+	vidMod "Reborn-but-in-Go/video/model"
 	"errors"
+	"gorm.io/gorm"
 	"log"
 	"sync"
 	"time"
@@ -55,6 +57,14 @@ func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 		return errors.New("insert data fail")
 	}
 	log.Printf("添加点赞记录成功")
+	//同时更改video表中的favorite_count字段
+	verr := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"id": FavoriteData.VideoId}).
+		Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
+	if verr != nil {
+		log.Println(verr.Error())
+		return errors.New("add video favorite_count fail")
+	}
+	log.Printf("点赞数量加一")
 	return nil
 }
 
@@ -68,6 +78,13 @@ func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8)
 			return err
 		}
 		log.Printf("删除点赞记录成功")
+		verr := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"id": videoId}).
+			Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
+		if verr != nil {
+			log.Println(verr.Error())
+			return errors.New("subtract video favorite_count fail")
+		}
+		log.Printf("点赞数量减一")
 	} else {
 		// 其他操作或错误处理
 		return errors.New("不支持的操作类型")
@@ -82,7 +99,7 @@ func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionTy
 		log.Println(err.Error())
 		return err
 	}
-	if existingFavorite.UserId != userId {
+	if actionType == 1 && existingFavorite.UserId != userId {
 		// 如果记录不存在，插入点赞数据
 		newFavorite := model.Favorite{
 			UserId:   userId,
@@ -96,7 +113,7 @@ func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionTy
 			return err
 		}
 	} else {
-		// 如果记录存在，只修改 status 为 actionType
+		// 如果已点赞记录存在，直接删除
 		err := favoriteDao.UpdateFavorite(userId, videoId, actionType)
 		if err != nil {
 			log.Println(err.Error())

@@ -1,14 +1,12 @@
 package controller
 
 import (
-	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/favorite/service"
 	"Reborn-but-in-Go/middleware"
 	"Reborn-but-in-Go/user/model"
 	vidMod "Reborn-but-in-Go/video/model"
 	"fmt"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"log"
 	"net/http"
 	"strconv"
@@ -68,26 +66,12 @@ func (f *FavoriteController) FavoriteAction(c *gin.Context) {
 		err := Favorite.FavoriteAction(userId, videoId, int8(actionType))
 		if err == nil && actionType == 1 {
 			log.Printf("点赞成功")
-			verr := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"user_id": userId, "id": videoId}).
-				Update("favorite_count", gorm.Expr("favorite_count + ?", 1)).Error
-			if verr != nil {
-				log.Println(verr.Error())
-				return
-			}
-			log.Printf("点赞数量加一")
 			c.JSON(http.StatusOK, FavoriteResponse{
 				StatusCode: 0,
 				StatusMsg:  "favorite action success",
 			})
 		} else if err == nil && actionType == 2 {
 			log.Printf("取消赞成功")
-			verr := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"user_id": userId, "id": videoId}).
-				Update("favorite_count", gorm.Expr("favorite_count - ?", 1)).Error
-			if verr != nil {
-				log.Println(verr.Error())
-				return
-			}
-			log.Printf("点赞数量减一")
 			c.JSON(http.StatusOK, FavoriteResponse{
 				StatusCode: 0,
 				StatusMsg:  "remove favorite action success",
