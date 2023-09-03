@@ -63,3 +63,13 @@ func GetVideoAuthor(videoId int64) (int64, error) {
 	}
 	return video.UserId, nil
 }
+
+// GetPublishCount 根据userid获得发布作品数
+func (*VideoDao) GetPublishCount(userid int64) (int64, error) {
+	var count int64
+	fmt.Println("获取用户作品数咯~")
+	if err := config.DB.Debug().Model(&model.Video{}).Where("user_id=?", userid).Count(&count).Error; err != nil {
+		return count, err
+	}
+	return count, nil
+}
