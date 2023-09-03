@@ -1,6 +1,7 @@
 package service
 
 import (
+	favoriteService "Reborn-but-in-Go/favorite/service"
 	followService "Reborn-but-in-Go/follow/service"
 	"Reborn-but-in-Go/user/dao"
 	"Reborn-but-in-Go/user/model"
@@ -11,6 +12,7 @@ import (
 type UserService struct {
 	UserDao *dao.UserDao
 	followService.FollowService
+	favoriteService.FavoriteService
 	//RedisClient *redis.Client
 }
 
@@ -90,6 +92,7 @@ func (s *UserService) UserLogin(username string, password string) (*model.LoginR
 func (s *UserService) GetUserByID(userId int64) (*model.UserResponse, error) {
 	user, _ := s.UserDao.GetUserByID(userId)
 	result, _ := s.IsFollowing(userId, user.Id)
+	user.TotalFavorited, _ = s.GetTotalFavoriteCount(userId)
 	user.IsFollow = result
 	user.FollowCount, _ = s.GetFollowingNum(userId)
 	user.FollowerCount, _ = s.GetFollowerNum(userId)
