@@ -2,6 +2,7 @@ package service
 
 import (
 	"Reborn-but-in-Go/favorite/dao"
+	userMod "Reborn-but-in-Go/user/model"
 	vidDao "Reborn-but-in-Go/video/dao"
 	vidMod "Reborn-but-in-Go/video/model"
 	"fmt"
@@ -129,8 +130,6 @@ func (fs *FavoriteService) GetVideosByVideoIDs(videoIDs []int64) ([]vidMod.Video
 	for _, videoID := range videoIDs {
 		video, err := vidDao.NewVideoDaoInstance().GetVideoById(videoID)
 		if err != nil {
-			// 处理获取视频信息失败的情况
-			// 这里可以根据具体情况记录日志或采取其他措施
 			fmt.Printf("获取视频信息失败，videoID: %d, 错误: %v\n", videoID, err)
 			continue
 		}
@@ -140,4 +139,12 @@ func (fs *FavoriteService) GetVideosByVideoIDs(videoIDs []int64) ([]vidMod.Video
 	}
 
 	return videos, nil
+}
+
+func (fs *FavoriteService) GetUserByID(userID int64) (userMod.User, error) {
+	user, err := dao.GetUserByID(userID)
+	if err != nil {
+		return userMod.User{}, err
+	}
+	return user, nil
 }

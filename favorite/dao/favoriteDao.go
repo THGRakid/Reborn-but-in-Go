@@ -3,6 +3,7 @@ package dao
 import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/favorite/model"
+	userMod "Reborn-but-in-Go/user/model"
 	vidMod "Reborn-but-in-Go/video/model"
 	"errors"
 	"gorm.io/gorm"
@@ -168,4 +169,20 @@ func GetFavoriteVideoIdList(userId int64) ([]int64, error) {
 		}
 	}
 	return FavoriteVideoIdList, nil
+}
+
+func GetUserByID(userId int64) (userMod.User, error) {
+	user := userMod.User{}
+	err := config.DB.Model(userMod.User{}).Where(map[string]interface{}{"id": userId}).
+		First(&user).Error
+	if err != nil {
+		if "record not found" == err.Error() { //未找到匹配的记录
+			log.Println("can't find data")
+			return userMod.User{}, nil
+		} else { //其他错误
+			log.Println(err.Error())
+			return user, errors.New("get userInfo failed")
+		}
+	}
+	return user, nil
 }
