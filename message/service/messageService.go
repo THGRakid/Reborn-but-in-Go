@@ -19,11 +19,22 @@ func NewMessageService(messageDao *dao.MessageDao) *MessageService {
 	}
 }
 
-// 假定一个用户id，这个应该从user方法获取
-var UserId int64 = 123
+// QueryList 根据用户ID和上次消息时间获取聊天消息记录
+func (s *MessageService) QueryList(UserId int64) (*model.ListResponse, error) {
+
+	// 调用 MessageDao 的 QueryMessageList 方法获取聊天消息记录
+
+	messageList := s.MessageDao.QueryMessageList(UserId)
+
+	// 构建 ListResponse 对象，将查询到的消息记录填充进去
+	listResponse := &model.ListResponse{
+		UserList: messageList,
+	}
+	return listResponse, nil
+}
 
 // QueryMessage 根据用户ID和上次消息时间获取聊天消息记录
-func (s *MessageService) QueryMessage(toUserId int64, preMsgTime string) (*model.ChatResponse, error) {
+func (s *MessageService) QueryMessage(UserId int64, toUserId int64, preMsgTime string) (*model.ChatResponse, error) {
 
 	// 调用 MessageDao 的 QueryMessageList 方法获取聊天消息记录
 
@@ -31,21 +42,18 @@ func (s *MessageService) QueryMessage(toUserId int64, preMsgTime string) (*model
 
 	// 构建 ChatResponse 对象，将查询到的消息记录填充进去
 	chatResponse := &model.ChatResponse{
-		StatusCode:  0,
-		StatusMsg:   "Success",
 		MessageList: messageList,
 	}
 	return chatResponse, nil
 }
 
 // SendMessage 发送消息
-func (s *MessageService) SendMessage(toUserID int64, content string) error {
+func (s *MessageService) SendMessage(userId int64, toUserId int64, content string) error {
 	message := &model.Message{
-		UserId:   UserId,
-		ToUserId: toUserID,
+		UserId:   userId,
+		ToUserId: toUserId,
 		Content:  content,
 		CreateAt: time.Now(),
-		Status:   1,
 	}
 
 	// 调用 DAO 的 CreateMessage 方法来保存消息到数据库
@@ -54,13 +62,5 @@ func (s *MessageService) SendMessage(toUserID int64, content string) error {
 		return err
 	}
 
-	/*	// 将消息发布到 Redis 频道
-		messageJSON, _ := json.Marshal(message)
-		err = s.RedisClient.Publish(context.Background(), "chat_channel", messageJSON).Err()
-		if err != nil {
-			// 处理发布到 Redis 频道的错误
-			return err
-		}
-	*/
 	return nil
 }

@@ -17,9 +17,11 @@ func InitMessageRouter(r *gin.Engine) {
 	// 创建表现层（Controller）的实例，传递服务层实例
 	messageController := controller.NewMessageController(messageService)
 
+	// 注册 GET 路由，处理获取聊天消息列表的请求，使用表现层中的 QueryMessage 函数
+	r.GET("/douyin/relation/friend/list/", messageController.QueryFriend)
+
 	// 注册 GET 路由，处理获取聊天消息的请求，使用表现层中的 QueryMessage 函数
 	r.GET("/douyin/message/chat/", messageController.QueryMessage)
-	//r.GET("/douyin/message/chat/ws", messageController.HandleWebSocketConnection)
 
 	// 注册 POST 路由，处理发送消息操作的请求，使用表现层中的 SendMessage 函数
 	r.POST("/douyin/message/action/", messageController.SendMessage)

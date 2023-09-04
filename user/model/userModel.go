@@ -6,7 +6,7 @@ type User struct {
 	Name            string `json:"name,omitempty"` //用户名称（不重复）
 	FollowCount     int64  `json:"follow_count"`   //关注人数
 	FollowerCount   int64  `json:"follower_count"` //粉丝人数
-	IsFollow        bool   `json:"is_follow"`      // true-已关注，false-未关注
+	IsFollow        bool   `json:"is_follow"`      // true-未关注，false-已关注
 	Password        string //密码
 	Avatar          string `json:"avatar"`           //用户头像
 	BackgroundImage string `json:"background_image"` //背景图像

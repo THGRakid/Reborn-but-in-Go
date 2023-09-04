@@ -33,13 +33,13 @@ func NewMessageDaoInstance() *MessageDao {
 	return messageDao
 }
 
-// QueryMessageList
+// QueryMessage
 /*
   方法一：
   查看在一段时间内双方的聊天记录
   参数：date string   一段时间
-  参数：SendId int64   此信息发送者
-  参数：ReceiveId int64   此信息接受者
+  参数：UserId int64   此信息发送者
+  参数：ToUserId int64   此信息接受者
   返回值：message对象列表
 */
 func (*MessageDao) QueryMessage(date *string, UserId int64, ToUserId int64) []*model.Message {
@@ -69,7 +69,50 @@ func (*MessageDao) SendMessage(message *model.Message) error {
 	return nil
 }
 
+// QueryMessageList
 /*
-	方法三：
-	展示页面聊天记录（最后一条）
+  方法三：
+  获取列表最新消息
+  参数：id int64   与信息有关的人
+  返回值：message对象列表
 */
+func (*MessageDao) QueryMessageList(id int64) []model.FriendUser {
+	var MessageList []model.FriendUser
+
+	// 查询当前请求用户发送的消息
+	sentMessages := []struct {
+		Content string
+	}{}
+	config.DB.Model(&model.Message{}).
+		Select("content").
+		Where("user_id = ? ", id).
+		Order("create_at ASC").
+		Find(&sentMessages)
+
+	// 查询当前请求用户接收的消息
+	receivedMessages := []struct {
+		Content string
+	}{}
+	config.DB.Model(&model.Message{}).
+		Select("content").
+		Where("to_user_id = ? ", id).
+		Order("create_at ASC").
+		Find(&receivedMessages)
+
+	// 提取内容和msgType组成FriendUser并添加到MessageList中
+	for _, message := range sentMessages {
+		MessageList = append(MessageList, model.FriendUser{
+			Message: message.Content,
+			MsgType: 1,
+		})
+	}
+	for _, message := range receivedMessages {
+		MessageList = append(MessageList, model.FriendUser{
+			Message: message.Content,
+			MsgType: 0,
+		})
+	}
+
+	fmt.Println(MessageList)
+	return MessageList
+}
