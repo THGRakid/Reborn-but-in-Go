@@ -43,6 +43,7 @@ func NewFavoriteDaoInstance() *FavoriteDao {
 	return favoriteDao
 }
 
+// GetFavoriteUserIdList 根据videoId获取点赞userId,获取视频的所有点赞用户
 func (*FavoriteDao) GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 	var FavoriteUserIdList []int64
 	err := config.DB.
@@ -56,6 +57,7 @@ func (*FavoriteDao) GetFavoriteUserIdList(videoId int64) ([]int64, error) {
 	return FavoriteUserIdList, nil
 }
 
+// GetFavoriteCount 根据videoId查询video表中的favorite_count字段
 func GetFavoriteCount(videoId int64) (int64, error) {
 	var video vidMod.Video
 	err := config.DB.Model(vidMod.Video{}).Where(map[string]interface{}{"id": videoId}).First(&video).Error
@@ -66,6 +68,7 @@ func GetFavoriteCount(videoId int64) (int64, error) {
 	return video.FavoriteCount, nil
 }
 
+// InsertFavorite 插入点赞数据
 func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 	err := config.DB.Model(model.Favorite{}).Create(&FavoriteData).Error
 	if err != nil {
@@ -83,6 +86,7 @@ func (*FavoriteDao) InsertFavorite(FavoriteData model.Favorite) error {
 	return nil
 }
 
+// UpdateFavorite 取消赞删除记录
 func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8) error {
 	if actionType == ActionTypeUnlike {
 		err := config.DB.Delete(&model.Favorite{}, "user_id = ? AND video_id = ?", userId, videoId).Error
@@ -104,6 +108,7 @@ func (*FavoriteDao) UpdateFavorite(userId int64, videoId int64, actionType int8)
 	return nil
 }
 
+// UpdateOrInsertFavorite 更新或插入点赞数据
 func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionType int8) error {
 	existingFavorite, err := favoriteDao.GetFavoriteInfo(userId, videoId)
 	if err != nil {
@@ -132,6 +137,7 @@ func (*FavoriteDao) UpdateOrInsertFavorite(userId int64, videoId int64, actionTy
 	return nil
 }
 
+// GetFavoriteInfo 根据userId,videoId查询点赞信息
 func (*FavoriteDao) GetFavoriteInfo(userId int64, videoId int64) (model.Favorite, error) {
 	favorite := model.Favorite{}
 	err := config.DB.Model(model.Favorite{}).Where(map[string]interface{}{"user_id": userId, "video_id": videoId}).
@@ -148,6 +154,7 @@ func (*FavoriteDao) GetFavoriteInfo(userId int64, videoId int64) (model.Favorite
 	return favorite, nil
 }
 
+// GetFavoriteVideoIdList 根据userId查询所属点赞全部videoId
 func GetFavoriteVideoIdList(userId int64) ([]int64, error) {
 	var FavoriteVideoIdList []int64
 	err := config.DB.Model(model.Favorite{}).Where(map[string]interface{}{"user_id": userId, "status": ActionTypeLike}).
@@ -164,6 +171,7 @@ func GetFavoriteVideoIdList(userId int64) ([]int64, error) {
 	return FavoriteVideoIdList, nil
 }
 
+// GetUserByID 根据用户ID获取用户信息
 func GetUserByID(userId int64) (userMod.User, error) {
 	user := userMod.User{}
 	err := config.DB.Model(userMod.User{}).Where(map[string]interface{}{"id": userId}).

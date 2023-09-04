@@ -1,12 +1,13 @@
 package service
 
 import (
+	"fmt"
+	"log"
+
 	"Reborn-but-in-Go/favorite/dao"
 	userMod "Reborn-but-in-Go/user/model"
 	vidDao "Reborn-but-in-Go/video/dao"
 	vidMod "Reborn-but-in-Go/video/model"
-	"fmt"
-	"log"
 )
 
 type FavoriteService struct {
