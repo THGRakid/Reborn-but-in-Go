@@ -105,6 +105,9 @@ func (fs *FavoriteService) FavoriteAction(userId int64, videoId int64, actionTyp
 	return nil
 }
 
+/*
+	2.request需要实现的功能：获取喜欢列表的相关函数。
+*/
 // GetFavoriteList 函数根据给定的 userId 和 curId 获取用户的点赞视频列表。(返回值是videoid)
 func (fs *FavoriteService) GetFavoriteList(userId int64) ([]int64, error) {
 	// 根据 userId 查询用户点赞的视频 id 列表
@@ -117,19 +120,30 @@ func (fs *FavoriteService) GetFavoriteList(userId int64) ([]int64, error) {
 	return videoIdList, nil
 }
 
-// GetFavoriteList 函数根据给定的 userId 和 curId 获取用户的点赞视频列表。(返回值是video结构体的切片)
+// GetVideosByVideoIDs 函数根据给定的视频id切片获取用户的点赞视频实例列表。(返回值是video结构体的切片)
 func (fs *FavoriteService) GetVideosByVideoIDs(videoIDs []int64) ([]vidMod.Video, error) {
-	videos := make([]vidMod.Video, 0)
+	videos := make([]vidMod.Video, len(videoIDs))
+	errors := make(chan error, len(videoIDs))
 
-	for _, videoID := range videoIDs {
-		video, err := vidDao.NewVideoDaoInstance().GetVideoById(videoID)
+	// 使用并发获取视频信息
+	for i, videoID := range videoIDs {
+		go func(i int, videoID int64) {
+			video, err := vidDao.NewVideoDaoInstance().GetVideoById(videoID)
+			if err != nil {
+				errors <- err
+				return
+			}
+			videos[i] = *video
+			errors <- nil
+		}(i, videoID)
+	}
+
+	// 等待所有并发任务完成
+	for range videoIDs {
+		err := <-errors
 		if err != nil {
-			fmt.Printf("获取视频信息失败，videoID: %d, 错误: %v\n", videoID, err)
-			continue
+			fmt.Printf("获取视频信息失败：%v\n", err)
 		}
-
-		// 将获取到的视频信息添加到结果切片中
-		videos = append(videos, *video)
 	}
 
 	return videos, nil
