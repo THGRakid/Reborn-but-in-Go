@@ -3,6 +3,9 @@ package service
 import (
 	"Reborn-but-in-Go/submission/dao"
 	"Reborn-but-in-Go/submission/model"
+	userMod "Reborn-but-in-Go/user/model"
+	videoDao "Reborn-but-in-Go/video/dao"
+	videoModel "Reborn-but-in-Go/video/model"
 	"Reborn-but-in-Go/video/service"
 	"context"
 	"fmt"
@@ -141,19 +144,50 @@ func (s *SubmissionService) CreateVideo(userId int64, title string, data *multip
 }
 
 // 2、获取视频列表 根据用户ID获取视频列表
-func (s *SubmissionService) QueryVideoList(userId int64) (*model.ListResponse, error) {
+// 获取视频id列表
+func (s *SubmissionService) QueryVideoList(userId int64) ([]int64, error) {
 	//调用 VideoDao 的 QueryVideoList 方法获取视频状态码，0-成功，其他值-失败列表
-	videoList, err := s.SubmissionDao.QueryVideoList(userId)
+	//获取投稿视频id列表
+	videoIdList, err := s.SubmissionDao.QueryVideoList(userId)
 
 	if err != nil {
-		fmt.Println("Service:Failed to get video list")
+		fmt.Println("Service:Failed to get video id list")
+		return nil, err
 	}
 
-	//构建ListResponse对象，将查询到的消息记录填充进去
-	listResponse := &model.ListResponse{
-		StatusCode: 0,
-		StatusMsg:  "Success",
-		VideoList:  videoList,
+	return videoIdList, nil
+
+}
+
+// 根据视频id列表获取视频实例
+func (s *SubmissionService) GetVideosByVideoIDs(videoIDs []int64) ([]videoModel.Video, error) {
+	videos := make([]videoModel.Video, len(videoIDs))
+	errors := make(chan error, len(videoIDs))
+
+	//并发获取视频
+	for i, videoID := range videoIDs {
+		go func(i int, videoID int64) {
+			video, err := videoDao.NewVideoDaoInstance().GetVideoById(videoID)
+			if err != nil {
+				errors <- err
+				return
+			}
+			videos[i] = *video
+			errors <- nil
+		}(i, videoID)
 	}
-	return listResponse, nil
+	for range videoIDs {
+		err := <-errors
+		if err != nil {
+			fmt.Println("service: Fail to get video list in (GetVideosByVideoIds). err:#{err}")
+		}
+	}
+	return videos, nil
+}
+func (fs *SubmissionService) GetUserByID(userID int64) (userMod.User, error) {
+	user, err := dao.GetUserByID(userID)
+	if err != nil {
+		return userMod.User{}, err
+	}
+	return user, nil
 }

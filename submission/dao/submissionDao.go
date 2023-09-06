@@ -3,13 +3,11 @@ package dao
 import (
 	"Reborn-but-in-Go/config"
 	"Reborn-but-in-Go/submission/model"
-	"fmt"
+	userMod "Reborn-but-in-Go/user/model"
+	"errors"
+	"log"
 	"sync"
 )
-
-/*
-	？？？？构造方法？？？？
-*/
 
 type SubmissionDao struct {
 }
@@ -41,14 +39,37 @@ func (*SubmissionDao) CreateVideo(video *model.Video) error {
 	return nil
 }
 
-// 2、视频列表。根据userID，查出video列表
-func (*SubmissionDao) QueryVideoList(userId int64) ([]*model.Video, error) {
-	var video []*model.Video
-	//根据user_id查询视频列表，按从大到小排序
-	err := config.DB.Where("user_id = ?", userId).Order("create_at desc").Find(&video).Error
+// 2、视频列表。根据userID，查出video发布列表
+// QueryVideoList 根据userId查询所投稿的全部videoId
+func (*SubmissionDao) QueryVideoList(userId int64) ([]int64, error) {
+	var VideoIdList []int64
+	err := config.DB.Model(model.Video{}).Where(map[string]interface{}{"user_id": userId}).
+		Pluck("id", &VideoIdList).Error
 	if err != nil {
-		fmt.Println("Failed to get video list")
-		return nil, err
+		if "record not found" == err.Error() {
+			log.Println("there are no PublishVideoId")
+			return VideoIdList, nil
+		} else {
+			log.Println(err.Error())
+			return VideoIdList, errors.New("Failed to get video ID list")
+		}
 	}
-	return video, nil
+	return VideoIdList, nil
+}
+
+// GetUserByID 根据用户ID获取用户信息
+func GetUserByID(userId int64) (userMod.User, error) {
+	user := userMod.User{}
+	err := config.DB.Model(userMod.User{}).Where(map[string]interface{}{"id": userId}).
+		First(&user).Error
+	if err != nil {
+		if "record not found" == err.Error() {
+			log.Println("can't find data")
+			return userMod.User{}, nil
+		} else {
+			log.Println(err.Error())
+			return user, errors.New("get userInfo failed")
+		}
+	}
+	return user, nil
 }
