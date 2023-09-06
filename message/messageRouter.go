@@ -23,7 +23,7 @@ func InitMessageRouter(r *gin.Engine) {
 	// 注册 GET 路由，处理获取聊天消息的请求，使用表现层中的 QueryMessage 函数
 	r.GET("/douyin/message/chat/", messageController.QueryMessage)
 
-	// 注册 POST 路由，处理发送消息操作的请求，使用表现层中的 SendMessage 函数
-	r.POST("/douyin/message/action/", messageController.SendMessage)
+	// 注册 GET路由，处理发送消息操作的请求，使用表现层中的 SendMessage 函数
+	r.GET("/douyin/message/action/", messageController.SendMessage)
 
 }

@@ -3,6 +3,7 @@ package service
 import (
 	"Reborn-but-in-Go/message/dao"
 	"Reborn-but-in-Go/message/model"
+	"fmt"
 	"time"
 )
 
@@ -38,7 +39,7 @@ func (s *MessageService) QueryMessage(UserId int64, toUserId int64, preMsgTime s
 
 	// 调用 MessageDao 的 QueryMessageList 方法获取聊天消息记录
 
-	messageList := s.MessageDao.QueryMessage(&preMsgTime, UserId, toUserId)
+	messageList := s.MessageDao.QueryMessage(preMsgTime, UserId, toUserId)
 
 	// 构建 ChatResponse 对象，将查询到的消息记录填充进去
 	chatResponse := &model.ChatResponse{
@@ -56,6 +57,7 @@ func (s *MessageService) SendMessage(userId int64, toUserId int64, content strin
 		CreateAt: time.Now(),
 	}
 
+	fmt.Println(message, "这是我")
 	// 调用 DAO 的 CreateMessage 方法来保存消息到数据库
 	err := s.MessageDao.SendMessage(message)
 	if err != nil {
