@@ -98,15 +98,11 @@ func (c *MessageController) QueryMessage(ctx *gin.Context) {
 // SendMessage 处理消息操作的请求
 func (c *MessageController) SendMessage(ctx *gin.Context) {
 	// 绑定请求中的 JSON 数据到 RelationActionRequest 结构体
-	var actionRequest model.RelationActionRequest
-	if err := ctx.ShouldBindJSON(&actionRequest); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request data"})
-		return
-	}
-
+	actionTypeString := ctx.Query("action_type")
+	actionType, _ := strconv.Atoi(actionTypeString)
 	// 检查 action_type，如果不是发送消息，返回错误
-	if actionRequest.ActionType != 1 {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid action type"})
+	if actionType != 1 {
+		ctx.JSON(http.StatusBadRequest, gin.H{"StatusCode": 1, "StatusMsg": "这不是发送消息"})
 		return
 	}
 
@@ -132,8 +128,12 @@ func (c *MessageController) SendMessage(ctx *gin.Context) {
 	}
 	userId := int64(userIdInt)
 
+	toUserIdString := ctx.Query("to_user_id")
+	toUserId, _ := strconv.Atoi(toUserIdString)
+	content := ctx.Query("content")
+	fmt.Println(content, "这是内容")
 	// 调用服务层发送消息
-	err := c.MessageService.SendMessage(userId, actionRequest.ToUserId, actionRequest.Content)
+	err := c.MessageService.SendMessage(userId, int64(toUserId), content)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"StatusCode": 1, "StatusMsg": "发送消息失败"})
 		return

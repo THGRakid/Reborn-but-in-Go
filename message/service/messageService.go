@@ -57,7 +57,7 @@ func (s *MessageService) SendMessage(userId int64, toUserId int64, content strin
 		CreateAt: time.Now(),
 	}
 
-	fmt.Println(message, "这是我")
+	fmt.Println(message, "message语句")
 	// 调用 DAO 的 CreateMessage 方法来保存消息到数据库
 	err := s.MessageDao.SendMessage(message)
 	if err != nil {

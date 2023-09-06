@@ -68,11 +68,3 @@ type ListResponse struct {
 	Response
 	UserList []FriendUser `json:"user_list"` // 消息列表
 }
-
-// RelationActionRequest  发送消息POST请求接收结构块
-type RelationActionRequest struct {
-	Token      string // 用户鉴权token
-	ToUserId   int64  // 对方用户id
-	ActionType int32  // 1-发送消息
-	Content    string // 消息内容
-}
