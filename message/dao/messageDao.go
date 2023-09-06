@@ -49,6 +49,7 @@ func (*MessageDao) QueryMessage(date string, UserId int64, ToUserId int64) []*mo
 	fmt.Println(date)
 	fmt.Println(UserId, "这是UserId")
 	fmt.Println(ToUserId, "这是ToUserId")
+	time.Sleep(5 * time.Second)
 	var MessageList []*model.Message
 	//查询双方信息，并指定时间范围，按从小到大顺序
 	config.DB.Where("((user_id = ? and to_user_id = ?) or (user_id = ? and to_user_id = ?))", UserId, ToUserId, ToUserId, UserId).
