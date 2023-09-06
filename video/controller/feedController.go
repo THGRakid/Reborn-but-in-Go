@@ -156,14 +156,14 @@ func (controller *feedController) Feed(c *gin.Context) {
 	if len(feedVideoList) > 0 {
 		fmt.Println(feedVideoList)
 		c.JSON(http.StatusOK, FeedResponse{
-			Response:  Response{StatusCode: 0}, //成功
+			Response:  Response{StatusCode: 0, StatusMsg: "查询视频成功"}, //成功
 			VideoList: feedVideoList,
 			NextTime:  newTime,
 		})
 	} else {
 		c.JSON(http.StatusOK, FeedNoVideoResponse{
-			Response: Response{StatusCode: 0}, //成功
-			NextTime: 0,                       //重新循环
+			Response: Response{StatusCode: 0, StatusMsg: "查询视频成功"}, //成功
+			NextTime: 0,                                            //重新循环
 		})
 	}
 

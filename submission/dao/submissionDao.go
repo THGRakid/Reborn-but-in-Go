@@ -5,6 +5,7 @@ import (
 	"Reborn-but-in-Go/submission/model"
 	userMod "Reborn-but-in-Go/user/model"
 	"errors"
+	"gorm.io/gorm"
 	"log"
 	"sync"
 )
@@ -35,6 +36,12 @@ func (*SubmissionDao) CreateVideo(video *model.Video) error {
 	result := config.DB.Create(&video)
 	if result.Error != nil {
 		return result.Error
+	}
+	//更新user作品数量
+	err := config.DB.Model(&model.User{}).Where("id = ?", video.UserId).
+		UpdateColumn("work_count", gorm.Expr("work_count + ?", 1)).Error
+	if err != nil {
+		return err
 	}
 	return nil
 }
