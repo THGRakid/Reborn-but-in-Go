@@ -2,7 +2,6 @@ package dao
 
 import (
 	"Reborn-but-in-Go/config"
-	userModel "Reborn-but-in-Go/user/model"
 	"Reborn-but-in-Go/video/model"
 	"fmt"
 	"sync"
@@ -67,11 +66,14 @@ func GetVideoAuthor(videoId int64) (int64, error) {
 
 // GetPublishCount 根据userid获得发布作品数
 func (*VideoDao) GetPublishCount(userId int64) (int64, error) {
-	var count int64
+	var videoCount int64
 	fmt.Println("获取用户作品数咯~")
-	err := config.DB.Model(&userModel.User{}).Pluck("work_count", &count).Where("id=?", userId).Error
+	err := config.DB.Model(&model.Video{}).
+		Where("user_id = ?", userId).
+		Count(&videoCount).Error
 	if err != nil {
 		return -1, err
 	}
-	return count, nil
+	fmt.Println(videoCount)
+	return videoCount, nil
 }

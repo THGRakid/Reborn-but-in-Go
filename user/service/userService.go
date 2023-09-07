@@ -99,7 +99,7 @@ func (s *UserService) GetUserByID(userId int64) (*model.UserResponse, error) {
 	user.FollowCount, _ = s.GetFollowingNum(userId)
 	user.FollowerCount, _ = s.GetFollowerNum(userId)
 	user.FavoriteCount, _ = s.GetTotalFavoriteVideoCount(userId)
-	user.WorkCount, _ = s.VideoDao.GetPublishCount(userId)
+	user.WorkCount, _ = s.GetPublishCount(userId)
 	userResponse := &model.UserResponse{
 		Response: model.Response{StatusCode: 0},
 		User:     user,

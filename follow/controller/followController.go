@@ -79,7 +79,7 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 		c.JSON(http.StatusOK, RelationActionResp{
 			Response{
 				StatusCode: -1,
-				StatusMsg:  "用户id格式错误",
+				StatusMsg:  "传入参数格式错误",
 			},
 		})
 		return
@@ -96,7 +96,7 @@ func (f *FollowController) RelationAction(c *gin.Context) {
 	c.JSON(http.StatusOK, RelationActionResp{
 		Response{
 			StatusCode: 0,
-			StatusMsg:  "OK",
+			StatusMsg:  "关注/取关操作成功",
 		},
 	})
 }
