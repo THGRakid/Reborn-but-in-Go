@@ -1,15 +1,15 @@
 package config
 
-//sync 是 Go 语言标准库中提供的用于并发操作的包。
-//它包含了一些用于同步的原语，如互斥锁（Mutex）和读写锁（RWMutex）
+// 使用云服务器
+//用户名：administrator
+//密码：Go123456@++
 import (
 	"sync"
 )
 
 var (
-	serverIP          = ""
-	serverAddress     = "http://localhost:8080" // 默认服务器地址
-	serverAddressLock sync.RWMutex              // 用于保护服务器地址并发访问
+	serverAddress     = "http://l47.113.230.49:8090" // 默认服务器地址
+	serverAddressLock sync.RWMutex                   // 用于保护服务器地址并发访问
 )
 
 // SetServerAddress 设置服务器地址
