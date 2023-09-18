@@ -109,7 +109,7 @@ func (fs *FavoriteService) FavoriteAction(userId int64, videoId int64, actionTyp
 /*
 	2.request需要实现的功能：获取喜欢列表的相关函数。
 */
-// GetFavoriteList 函数根据给定的 userId 和 curId 获取用户的点赞视频列表。(返回值是videoid)
+// GetFavoriteList 函数根据给定的 userId  获取用户的点赞视频列表。(返回值是videoid)
 func (fs *FavoriteService) GetFavoriteList(userId int64) ([]int64, error) {
 	// 根据 userId 查询用户点赞的视频 id 列表
 	videoIdList, err := dao.GetFavoriteVideoIdList(userId)

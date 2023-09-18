@@ -106,7 +106,7 @@ func (f *FavoriteController) FavoriteAction(c *gin.Context) {
 		} else {
 			log.Printf("点赞失败：%v", err)
 			c.JSON(http.StatusOK, FavoriteResponse{
-				StatusCode: 1,
+				StatusCode: -1,
 				StatusMsg:  "favorite action fail",
 			})
 		}
